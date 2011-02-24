@@ -7,9 +7,6 @@
 [submodule "vendor/multipart"]
 	path = vendor/multipart
 	url = http://github.com/isaacs/multipart-js.git
-[submodule "vendor/cookiejar"]
-	path = vendor/cookiejar
-	url = http://github.com/bmeck/node-cookiejar.git
 [submodule "vendor/mongoose"]
 	path = vendor/mongoose
 	url = http://github.com/LearnBoost/mongoose.git
