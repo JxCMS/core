@@ -1,30 +1,30 @@
-[submodule "vendor/utils"]
-	path = vendor/utils
-	url = http://github.com/kriszyp/commonjs-utils.git
-[submodule "vendor/worker"]
-	path = vendor/worker
-	url = http://github.com/pgriess/node-webworker.git
-[submodule "vendor/multipart"]
-	path = vendor/multipart
-	url = http://github.com/isaacs/multipart-js.git
 [submodule "vendor/mongoose"]
 	path = vendor/mongoose
 	url = http://github.com/LearnBoost/mongoose.git
+[submodule "vendor/multipart"]
+	path = vendor/multipart
+	url = http://github.com/isaacs/multipart-js.git
+[submodule "vendor/utils"]
+	path = vendor/utils
+	url = http://github.com/kriszyp/commonjs-utils.git
 [submodule "vendor/websocket-client"]
 	path = vendor/websocket-client
 	url = http://github.com/pgriess/node-websocket-client.git
+[submodule "vendor/worker"]
+	path = vendor/worker
+	url = http://github.com/pgriess/node-webworker.git
 [submodule "vendor/yaml"]
 	path = vendor/yaml
 	url = https://github.com/visionmedia/js-yaml.git
 [submodule "vendor/jsmin"]
 	path = vendor/jsmin
 	url = https://github.com/pkrumins/node-jsmin.git
-[submodule "vendor/socket.io-server"]
-	path = vendor/socket.io-server
-	url = https://github.com/LearnBoost/Socket.IO-node.git
 [submodule "vendor/socket.io-client"]
 	path = vendor/socket.io-client
 	url = https://github.com/LearnBoost/Socket.IO.git
+[submodule "vendor/socket.io-server"]
+	path = vendor/socket.io-server
+	url = https://github.com/LearnBoost/Socket.IO-node.git
 [submodule "vendor/jazz"]
 	path = vendor/jazz
 	url = https://github.com/shinetech/jazz.git
