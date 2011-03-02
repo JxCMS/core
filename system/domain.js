@@ -84,6 +84,8 @@ exports.Domain = new Class({
                 View.init(d);
                 core.log('back from View.init()');
             }, this);
+            core.log('# of promises returned = ' + promises.length);
+             
             Promise.all(promises).then(function(){
                 core.log('all promises returned');
                 promise.resolve(true);     

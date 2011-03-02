@@ -21,6 +21,7 @@ exports.init = function(db, domain, router){
     
     Module.find({}, function(err, docs){
         if (err) {
+            core.log('error from the database for ' + domain);
             promise.resolve(err);  //???? is this the right way to indicate the error   
         } else if (docs.length > 0) {
             core.log('docs returned: ' + sys.inspect(docs));
@@ -78,6 +79,9 @@ function findModules(docs, Module, domain){
             //filePath = path;
             sys.puts('Directory path: ' + path);
             return fs.readdir(path);
+        }, function(err){
+            //no such directory...
+            throw err;
         }).then(function(files) {
             //sys.log(sys.inspect(files));
             files.each(function(file){
@@ -99,6 +103,8 @@ function findModules(docs, Module, domain){
                 }
             });
             
+        },function(err){
+            //no files... continue on
         });
     });
 }

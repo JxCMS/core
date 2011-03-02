@@ -105,6 +105,9 @@ exports.init = function(domain){
         fs.realpath(dir).then(function(path){
             basePath = path;
             return fs.readdir(path);
+        }, function(err){
+            //no directory here...continue on
+            throw err;
         }).then(function(files){
             files.each(function(file){
                 var p;
@@ -116,12 +119,11 @@ exports.init = function(domain){
                 }
                 process_directory(p, domain);
             });
+        }, function(err){
+            //there are no files... ignore it and continue on
+            core.log('no files for ' + dir);
         });
     });
-    //all(ps,function(){
-    //    promise.resolve();
-    //});
-    //return promise;
     return true;
 };
 
@@ -157,7 +159,9 @@ var process_directory = function(dir, domain){
         core.debug('got an error', err);
         core.log('error was in process_directory for ' + dir + ' on ' + domain);
         if (err.errno != 2) {
+            core.debug('err',err);
             throw err;
+
         } else {
             //missing file or directory...
             // continue through...
