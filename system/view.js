@@ -135,22 +135,24 @@ var process_directory = function(dir, domain){
         if (files.length > 0) {
             core.log('loading files for ' + dir + 'and domain ' + domain);
             files.each(function(file){
-                fs.readFile(dir+'/'+file, 'utf-8').then(function(text){
-                    var name = path.basename(file, path.extname(file));
-                    if (path.basename(dir) !== 'views') {
-                        core.log('dir: ' + dir);
-                        core.log('basename: ' + path.basename(dir));
-                        name = path.basename(dir) + '/' + name;
-                    }
-                    if (!Object.keys(templates[domain]).contains(name)) {
-                        core.debug('text in file ' + file, text);
-                        templates[domain][name] = jazz.compile(text);
-                        core.debug('current templates for domain ' + domain, templates[domain]);
-                    }
-                }, function(err){
-                    core.debug('got an error', err);
-                    throw err;
-                });
+                if (file.contains('.jazz')) {
+                    fs.readFile(dir+'/'+file, 'utf-8').then(function(text){
+                        var name = path.basename(file, path.extname(file));
+                        if (path.basename(dir) !== 'views') {
+                            core.log('dir: ' + dir);
+                            core.log('basename: ' + path.basename(dir));
+                            name = path.basename(dir) + '/' + name;
+                        }
+                        if (!Object.keys(templates[domain]).contains(name)) {
+                            core.debug('text in file ' + file, text);
+                            templates[domain][name] = jazz.compile(text);
+                            core.debug('current templates for domain ' + domain, templates[domain]);
+                        }
+                    }, function(err){
+                        core.debug('got an error', err);
+                        throw err;
+                    });
+                }
             });
         }
         core.log('done processing ' + dir + ' on ' + domain);
