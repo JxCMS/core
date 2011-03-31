@@ -3,7 +3,7 @@
  * will inherit from.
  */
 
-var View = require('view'),
+var View = require('./view'),
     Promise = require('promise').Promise,
     when = require('promise').when;
 

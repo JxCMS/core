@@ -1,22 +1,20 @@
-var router = require('router').Router,
+var router = require('./router').Router,
     sys = require('sys'),
     fs = require('fs-promise'),
     p = require('path'),
     Promise = require('promise').Promise;
 
-//let's test the events..
-core.addEvent('routeAdded', function(){sys.log('caught routeAdded event in module');});
-
-core.log('in modules.js');
-
 //load model
-require('modules.model');
+require('../models/modules.model');
+
+var modules = {};
 
 
 exports.init = function(db, domain, router){
     var promise = new Promise();
     
     core.log('In Modules.init() for ' + domain);
+    modules[domain] = {};
     var Module = db.model('Module');
     
     Module.find({}, function(err, docs){
@@ -30,18 +28,24 @@ exports.init = function(db, domain, router){
                     if (mod.permanent) {
                         //this is a system module
                         core.log('get system modules for ' + domain);
-                        fs.realpath('./modules/').then(function(path){
-                            return require(path+ '/' + mod.get('name') + '/' + mod.get('name')).init(db, router);
+                        fs.realpath('../modules/').then(function(path){
+                            modules[domain][mod.get('name')] = require(path+ '/' + mod.get('name') + '/' + mod.get('name'));
+                            return modules[domain][mod.get('name')].init(db, router, domain);
                         },function(err){
                             core.debug('error from finding a system module path', err);
+                        }).then(function(){
+                            core.fireEvent('moduleInitDone', [mod.get('name')]);
                         });
                     } else {
                         core.log('get domain specific modules for ' + domain);
                         //this is a domain specific module
-                        fs.realpath('domains/' + domain + '/modules/').then(function(path){
-                            return require( path + '/' + mod.get('name') + '/' + mod.get('name') ).init(db, router);
+                        fs.realpath('../domains/' + domain + '/modules/').then(function(path){
+                            modules[domain][mod.get('name')] = require( path + '/' + mod.get('name') + '/' + mod.get('name'));
+                            return modules[domain][mod.get('name')].init(db, router, domain);
                         },function(err){
                             core.debug('error from finding a system module path', err);
+                        }).then(function(){
+                            core.fireEvent('moduleInitDone', [mod.get('name')]);
                         });
                     }
                 }
@@ -57,6 +61,19 @@ exports.init = function(db, domain, router){
     });
         
     return promise;
+};
+
+exports.isModuleReady = function (module, domain, returnModule) {
+    returnModule = !nil(returnModule) ? returnmodule : false;
+    if (returnModule) {
+        if (!nil(modules[domain][module])) {
+            return modules[domain][module];
+        } else {
+            return false;
+        }
+    } else {
+        return !nil(modules[domain][module]);
+    }
 };
 
 

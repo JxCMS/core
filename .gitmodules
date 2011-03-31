@@ -13,12 +13,6 @@
 [submodule "vendor/worker"]
 	path = vendor/worker
 	url = http://github.com/pgriess/node-webworker.git
-[submodule "vendor/yaml"]
-	path = vendor/yaml
-	url = https://github.com/visionmedia/js-yaml.git
-[submodule "vendor/jsmin"]
-	path = vendor/jsmin
-	url = https://github.com/pkrumins/node-jsmin.git
 [submodule "vendor/socket.io-client"]
 	path = vendor/socket.io-client
 	url = https://github.com/LearnBoost/Socket.IO.git

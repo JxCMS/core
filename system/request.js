@@ -1,7 +1,7 @@
 
 
 var sys = require('sys'),
-    parser = require('parsers');
+    parser = require('./parsers');
 
 
 exports.Request = new Class({

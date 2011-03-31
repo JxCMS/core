@@ -1,7 +1,7 @@
 
 var Promise = require('promise').Promise,
     when = require('promise').when,
-    Settings = require('settings').Settings,
+    Settings = require('./settings').Settings,
     Theme = {};
 
 

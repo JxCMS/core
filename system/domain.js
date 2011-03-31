@@ -8,12 +8,12 @@ var sys = require('sys'),
     url = require('url'),
     fs = require('fs-promise'),
     Promise = require('promise'),
-    Modules = require('modules'),
-    Request = require('request').Request,
-    Response = require('response').Response,
-    Router = require('router').Router,
-    View = require('view')
-    Model = require('models');
+    Modules = require('./modules'),
+    Request = require('./request').Request,
+    Response = require('./response').Response,
+    Router = require('./router').Router,
+    View = require('./view'),
+    Model = require('./models');
 
 
 /**

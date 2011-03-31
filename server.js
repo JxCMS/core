@@ -9,18 +9,19 @@
  */
 
 //add current system paths to require
-require.paths.unshift('./vendor', './system', './config', './models','./modules');
+//DEPRECATED function - leave it here though until we can test everything without it
+//require.paths.unshift('./vendor', './system', './config', './models','./modules');
 
 //require mootools so we can use Class everywhere
 require('mootools').apply(GLOBAL);
 
-var config = require('global').global;  //global config
+var config = require('./config/global').global;  //global config
 
 //setup the global core object
-GLOBAL.core = new (require('core').core)(config);
+GLOBAL.core = new (require('./system/core').core)(config);
 
 var sys = require('sys'),
-    Domain = require('domain').Domain,
+    Domain = require('./system/domain').Domain,
     http = require('http'),
     when = require('promise').when;
 
