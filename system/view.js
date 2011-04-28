@@ -16,12 +16,13 @@ var templates = {};
 
 var helpers = {};
 
-exports.JSON = new Class({
+exports.json = new Class({
 
     data: null,
 
-    initialize: function(){
+    initialize: function(request, response, options){
         this.data = {};
+        response.contentType('.json');
     },
 
     render: function(){
@@ -30,6 +31,54 @@ exports.JSON = new Class({
 
     'set': function(key, value){
         this.data[key] = value;
+    }
+});
+
+exports.file = new Class({
+
+    filename: null,
+    content: null,
+    useContent: false,
+    type: null,
+
+    initialize: function(request, response, options){
+        this.data = {};
+        this.response = response;
+    },
+
+    setStringType: function(flag) {
+        this.useContent = flag;
+        return this;
+    },
+
+    render: function(){
+        if (this.useContent) {
+            this.response.contentType(this.type);
+            return this.content;
+        } else {
+            if (!nil(this.filename)) {
+                this.response.sendfile(this.filename);
+            } else {
+                throw new Error('No filename supplied to view.');
+            }
+            return null;
+        }
+    },
+
+
+    'set': function(key, value){
+        if (key == 'content') {
+            this.content = value;
+            this.useContent = true;
+        } else {
+            //this should be a full path to the file
+            this.filename = value;
+        }
+        return this;
+    },
+
+    setFileType: function (type) {
+        this.type = type;
     }
 });
 
@@ -50,9 +99,11 @@ exports.html = new Class({
         } else {
             this.domain = request.domain;
         }
+        this.setTemplate(request.getParam('action'));
         this.data = {};
         //automatically add the partial support
         this.data.partial = this.render.bind(this);
+        response.contentType('.html');
     },
 
     render: function(name){

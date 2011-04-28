@@ -23,15 +23,8 @@ GLOBAL.core = new (require('./system/core').core)(config);
 var sys = require('sys'),
     Domain = require('./system/domain').Domain,
     http = require('http'),
-    when = require('promise').when;
-
-//hook into events to observe what's happening
-core.addEvents({
-    beforeDispatch: function(req,resp){ core.log('in beforeDispatch event');},
-    afterDispatch: function(req,resp){ core.log('in afterDispatch event');},
-    beforeAction: function(req,resp){ core.log('in beforeAction event');},
-    afterAction: function(req,resp){ core.log('in afterAction event');}
-});
+    when = require('promise').when,
+    Hmvc = require('hmvc');  //set up hmvc
 
 var domain = new Domain();
 domain.init().then(function(completed){
@@ -48,6 +41,7 @@ domain.init().then(function(completed){
             return core.call('pageDone', res);
         });
     }).listen(8000);
+    core.log('Server listening on port 8000');
 });
 
 

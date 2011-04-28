@@ -1,7 +1,8 @@
 
 
 var sys = require('sys'),
-    parser = require('./parsers');
+    parser = require('./parsers'),
+    url = require('url');
 
 
 exports.Request = new Class({
@@ -19,21 +20,31 @@ exports.Request = new Class({
     initialize: function(req){
         this.request = req;
 
-        //break url at ?
-        var parts = req.url.split('?');
-        core.debug('parts of the uri split on ?', parts);
-        this.uri = parts[0];
-        this.querystring = parts[1];
-        this.method = req.method;
-        this.params = {};
-
+        var params,
+            urlObj = url.parse(req.url,true);
+            
+        this.uri = urlObj.pathname;
+        core.debug('urlObj', urlObj);
+        if (!nil(urlObj.search)) {
+            //pull the ? if it's there
+            if (urlObj.search.contains('?')) {
+                var parts = urlObj.search.split('?');
+                core.debug('querystring', parts[1]);
+                urlObj.search = parts[1];
+            }
+            params = urlObj.search.parseQueryString();
+        } else {
+            params = {};
+        }
+        core.debug('params from url', params);
         //parse any cookies...
         this.parseCookies(req);
 
         //parse params from request uri and body
-        var get_params = require('url').parse(this.uri, true).query;
+        //var get_params = require('url').parse(this.uri, true).query;
+        //core.debug('url params passed in', get_params);
         //combine with cookies so we can get cookie info using getParam()
-        get_params = Object.merge(this.cookies, get_params);
+        var get_params = Object.merge(this.cookies, params);
         if (req.method == 'POST') {
             //is it multipart?
             if (req.headers.content-type.contains('multipart')){
@@ -80,11 +91,14 @@ exports.Request = new Class({
 
     getParam: function(key, def) {
         def = !nil(def)? def : null;
+        var ret;
         if (!nil(this.params[key])) {
-            return this.params[key];
+            ret = this.params[key];
         } else {
-            return def;
+            ret = def;
         }
+        core.debug('getParam(' + key + ')',ret);
+        return ret;
     },
 
     setParam: function(key, value) {
@@ -93,6 +107,9 @@ exports.Request = new Class({
 
     setParams: function(obj){
         core.debug('params sent into request.setParams ', obj);
+        if (nil(this.params)) {
+            this.params = {};
+        }
         this.params = Object.merge(this.params, obj);
         core.debug('resulting param object', this.params);
     },
@@ -120,5 +137,11 @@ exports.Request = new Class({
         }
 
         return ret;
+    },
+
+    isAjax: function(){
+        //for now return false...
+        return false;
+        //TODO: figure out how to tell if this came via ajax
     }
 });

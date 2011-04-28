@@ -16,18 +16,19 @@ var sys = require('sys'),
     Model = require('./models');
 
 
+
 /**
  * require the theme functions. There's no class yet and we don't actually call
  * these functions. However, we need to be sure that the system has hooked into
  * the proper events to do it's work.
  */
 
-require('theme');
+require('./theme');
 
 /**
  * Require session. This hooks into the proper events to enable session support.
  */
-require('session');
+require('./session');
 
 exports.Domain = new Class({
 

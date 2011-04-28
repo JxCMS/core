@@ -111,14 +111,14 @@ var createSession = function(request, response, promises) {
     var sess = new Session(request, response);
     var promise = new Promise();
     when(sess.init(), function(){
-        core.debug('session on request', request.session);
+        //core.debug('session on request', request.session);
         promise.resolve();
     });
     promises.push(promise);
 }
 
 var saveSession = function (response, promises) {
-    core.debug('response in saveSession', response);
+    //core.debug('response in saveSession', response);
     if (!nil(response.session)) {
         response.session.save();
     }

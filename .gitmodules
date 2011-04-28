@@ -1,24 +1,27 @@
-[submodule "vendor/mongoose"]
-	path = vendor/mongoose
+[submodule "node_modules/mongoose"]
+	path = node_modules/mongoose
 	url = http://github.com/LearnBoost/mongoose.git
-[submodule "vendor/multipart"]
-	path = vendor/multipart
+[submodule "node_modules/multipart"]
+	path = node_modules/multipart
 	url = http://github.com/isaacs/multipart-js.git
-[submodule "vendor/utils"]
-	path = vendor/utils
+[submodule "node_modules/utils"]
+	path = node_modules/utils
 	url = http://github.com/kriszyp/commonjs-utils.git
-[submodule "vendor/websocket-client"]
-	path = vendor/websocket-client
+[submodule "node_modules/websocket-client"]
+	path = node_modules/websocket-client
 	url = http://github.com/pgriess/node-websocket-client.git
-[submodule "vendor/worker"]
-	path = vendor/worker
+[submodule "node_modules/worker"]
+	path = node_modules/worker
 	url = http://github.com/pgriess/node-webworker.git
-[submodule "vendor/socket.io-client"]
-	path = vendor/socket.io-client
+[submodule "node_modules/socket.io-client"]
+	path = node_modules/socket.io-client
 	url = https://github.com/LearnBoost/Socket.IO.git
-[submodule "vendor/socket.io-server"]
-	path = vendor/socket.io-server
+[submodule "node_modules/socket.io-server"]
+	path = node_modules/socket.io-server
 	url = https://github.com/LearnBoost/Socket.IO-node.git
-[submodule "vendor/jazz"]
-	path = vendor/jazz
+[submodule "node_modules/jazz"]
+	path = node_modules/jazz
 	url = https://github.com/shinetech/jazz.git
+[submodule "node_modules/hmvc"]
+	path = node_modules/hmvc
+	url = https://github.com/mixu/hmvc-cfs.git

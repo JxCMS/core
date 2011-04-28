@@ -16,7 +16,7 @@ exports.createConnection = function(cfg) {
 };
 
 exports.loadSystemModels = function(){
-    var p = '../models';
+    var p = './models';
 
     fs.realpath(p).then(function(path){
         p = path

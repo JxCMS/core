@@ -2,7 +2,8 @@ var router = require('./router').Router,
     sys = require('sys'),
     fs = require('fs-promise'),
     p = require('path'),
-    Promise = require('promise').Promise;
+    Promise = require('promise').Promise,
+    Hmvc = require('hmvc');
 
 //load model
 require('../models/modules.model');
@@ -20,7 +21,7 @@ exports.init = function(db, domain, router){
     Module.find({}, function(err, docs){
         if (err) {
             core.log('error from the database for ' + domain);
-            promise.resolve(err);  //???? is this the right way to indicate the error   
+            promise.reject(err);  //???? is this the right way to indicate the error
         } else if (docs.length > 0) {
             core.log('docs returned: ' + sys.inspect(docs));
             docs.each(function(mod){
@@ -28,7 +29,8 @@ exports.init = function(db, domain, router){
                     if (mod.permanent) {
                         //this is a system module
                         core.log('get system modules for ' + domain);
-                        fs.realpath('../modules/').then(function(path){
+                        fs.realpath('./modules/').then(function(path){
+                            Hmvc.add_modules([path + '/' + mod.get('name')], domain);
                             modules[domain][mod.get('name')] = require(path+ '/' + mod.get('name') + '/' + mod.get('name'));
                             return modules[domain][mod.get('name')].init(db, router, domain);
                         },function(err){
@@ -39,7 +41,8 @@ exports.init = function(db, domain, router){
                     } else {
                         core.log('get domain specific modules for ' + domain);
                         //this is a domain specific module
-                        fs.realpath('../domains/' + domain + '/modules/').then(function(path){
+                        fs.realpath('./domains/' + domain + '/modules/').then(function(path){
+                            Hmvc.add_modules([path + '/' + mod.get('name')], domain);
                             modules[domain][mod.get('name')] = require( path + '/' + mod.get('name') + '/' + mod.get('name'));
                             return modules[domain][mod.get('name')].init(db, router, domain);
                         },function(err){
@@ -64,7 +67,7 @@ exports.init = function(db, domain, router){
 };
 
 exports.isModuleReady = function (module, domain, returnModule) {
-    returnModule = !nil(returnModule) ? returnmodule : false;
+    returnModule = !nil(returnModule) ? returnModule : false;
     if (returnModule) {
         if (!nil(modules[domain][module])) {
             return modules[domain][module];
