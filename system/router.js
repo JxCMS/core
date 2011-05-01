@@ -1,7 +1,7 @@
 var sys = require('sys'),
     Promise = require('promise').Promise,
-    request = require('request').Request,
-    response = require('response').Response;
+    request = require('./request').Request,
+    response = require('./response').Response;
 
 (function(){
 

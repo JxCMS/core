@@ -3,7 +3,7 @@
  * will inherit from.
  */
 
-var View = require('view'),
+var View = require('./view'),
     Promise = require('promise').Promise,
     when = require('promise').when;
 
@@ -15,6 +15,8 @@ var Controller_Main = exports.Controller_Main = new Class({
 
     options: {},
 
+    module: null,
+    
     initialize: function(options) {
         this.setOptions(options);
     },
@@ -35,6 +37,10 @@ var Controller_Main = exports.Controller_Main = new Class({
                 return self[action](request, response);
             }).then(function(){
                 return core.call('afterAction',[request,response]);
+            },function(err){
+                //an error in the controller action is caught here
+                core.debug('!!!controller action error', err);
+                promise.reject(err);
             }).then(function(){
                 return self.after(request, response);
             }).then(function(){
@@ -51,16 +57,11 @@ var Controller_Main = exports.Controller_Main = new Class({
         
     },
 
-    /**
-     *
-     * @param request
-     * @param response
-     */
+
     before: function(request, response) {
         var promise = new Promise();
         //create the needed view
         this.view = View.createView(request, response, {});
-        this.view.setTemplate(request.getParam('action'));
         response.view = this.view;
         core.debug('view object',this.view);
         promise.resolve('true');
@@ -71,10 +72,19 @@ var Controller_Main = exports.Controller_Main = new Class({
         var promise = new Promise();
         //render the view
         when(this.view.render(), function(content){
-            response.setContent(content);
-            core.debug('content we\'re returning',response.getContent());
+            if (!nil(content)) {
+                response.setContent(content);
+                //core.debug('content we\'re returning',response.getContent());
+            }
             promise.resolve('true');
         });
         return promise;
+    },
+    
+    /**
+     * Allows a reference to the module to be set.
+     */
+    setModule: function (module) {
+        this.module = module;
     }
 });

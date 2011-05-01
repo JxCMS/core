@@ -8,12 +8,13 @@ var sys = require('sys'),
     url = require('url'),
     fs = require('fs-promise'),
     Promise = require('promise'),
-    Modules = require('modules'),
-    Request = require('request').Request,
-    Response = require('response').Response,
-    Router = require('router').Router,
-    View = require('view')
-    Model = require('models');
+    Modules = require('./modules'),
+    Request = require('./request').Request,
+    Response = require('./response').Response,
+    Router = require('./router').Router,
+    View = require('./view'),
+    Model = require('./models');
+
 
 
 /**
@@ -22,12 +23,12 @@ var sys = require('sys'),
  * the proper events to do it's work.
  */
 
-require('theme');
+require('./theme');
 
 /**
  * Require session. This hooks into the proper events to enable session support.
  */
-require('session');
+require('./session');
 
 exports.Domain = new Class({
 

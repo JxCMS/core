@@ -16,12 +16,13 @@ var templates = {};
 
 var helpers = {};
 
-exports.JSON = new Class({
+exports.json = new Class({
 
     data: null,
 
-    initialize: function(){
+    initialize: function(request, response, options){
         this.data = {};
+        response.contentType('.json');
     },
 
     render: function(){
@@ -30,6 +31,54 @@ exports.JSON = new Class({
 
     'set': function(key, value){
         this.data[key] = value;
+    }
+});
+
+exports.file = new Class({
+
+    filePath: null,
+    content: null,
+    useContent: false,
+    type: null,
+
+    initialize: function(request, response, options){
+        this.data = {};
+        this.response = response;
+    },
+
+    setStringType: function(flag) {
+        this.useContent = flag;
+        return this;
+    },
+
+    render: function(){
+        if (this.useContent) {
+            this.response.contentType(this.type);
+            return this.content;
+        } else {
+            if (!nil(this.filePath)) {
+                this.response.sendfile(this.filePath);
+            } else {
+                throw new Error('No file path supplied to view.');
+            }
+            return null;
+        }
+    },
+
+
+    'set': function(key, value){
+        if (key == 'content') {
+            this.content = value;
+            this.useContent = true;
+        } else {
+            //this should be a full path to the file
+            this.filePath = value;
+        }
+        return this;
+    },
+
+    setFileType: function (type) {
+        this.type = type;
     }
 });
 
@@ -50,9 +99,11 @@ exports.html = new Class({
         } else {
             this.domain = request.domain;
         }
+        this.setTemplate(request.getParam('action'));
         this.data = {};
         //automatically add the partial support
         this.data.partial = this.render.bind(this);
+        response.contentType('.html');
     },
 
     render: function(name){
@@ -135,22 +186,24 @@ var process_directory = function(dir, domain){
         if (files.length > 0) {
             core.log('loading files for ' + dir + 'and domain ' + domain);
             files.each(function(file){
-                fs.readFile(dir+'/'+file, 'utf-8').then(function(text){
-                    var name = path.basename(file, path.extname(file));
-                    if (path.basename(dir) !== 'views') {
-                        core.log('dir: ' + dir);
-                        core.log('basename: ' + path.basename(dir));
-                        name = path.basename(dir) + '/' + name;
-                    }
-                    if (!Object.keys(templates[domain]).contains(name)) {
-                        core.debug('text in file ' + file, text);
-                        templates[domain][name] = jazz.compile(text);
-                        core.debug('current templates for domain ' + domain, templates[domain]);
-                    }
-                }, function(err){
-                    core.debug('got an error', err);
-                    throw err;
-                });
+                if (file.contains('.jazz')) {
+                    fs.readFile(dir+'/'+file, 'utf-8').then(function(text){
+                        var name = path.basename(file, path.extname(file));
+                        if (path.basename(dir) !== 'views') {
+                            core.log('dir: ' + dir);
+                            core.log('basename: ' + path.basename(dir));
+                            name = path.basename(dir) + '/' + name;
+                        }
+                        if (!Object.keys(templates[domain]).contains(name)) {
+                            core.debug('text in file ' + file, text);
+                            templates[domain][name] = jazz.compile(text);
+                            core.debug('current templates for domain ' + domain, templates[domain]);
+                        }
+                    }, function(err){
+                        core.debug('got an error', err);
+                        throw err;
+                    });
+                }
             });
         }
         core.log('done processing ' + dir + ' on ' + domain);
