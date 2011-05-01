@@ -36,7 +36,7 @@ exports.json = new Class({
 
 exports.file = new Class({
 
-    filename: null,
+    filePath: null,
     content: null,
     useContent: false,
     type: null,
@@ -56,10 +56,10 @@ exports.file = new Class({
             this.response.contentType(this.type);
             return this.content;
         } else {
-            if (!nil(this.filename)) {
-                this.response.sendfile(this.filename);
+            if (!nil(this.filePath)) {
+                this.response.sendfile(this.filePath);
             } else {
-                throw new Error('No filename supplied to view.');
+                throw new Error('No file path supplied to view.');
             }
             return null;
         }
@@ -72,7 +72,7 @@ exports.file = new Class({
             this.useContent = true;
         } else {
             //this should be a full path to the file
-            this.filename = value;
+            this.filePath = value;
         }
         return this;
     },

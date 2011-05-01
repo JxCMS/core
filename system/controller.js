@@ -15,6 +15,8 @@ var Controller_Main = exports.Controller_Main = new Class({
 
     options: {},
 
+    module: null,
+    
     initialize: function(options) {
         this.setOptions(options);
     },
@@ -55,11 +57,7 @@ var Controller_Main = exports.Controller_Main = new Class({
         
     },
 
-    /**
-     *
-     * @param request
-     * @param response
-     */
+
     before: function(request, response) {
         var promise = new Promise();
         //create the needed view
@@ -81,5 +79,12 @@ var Controller_Main = exports.Controller_Main = new Class({
             promise.resolve('true');
         });
         return promise;
+    },
+    
+    /**
+     * Allows a reference to the module to be set.
+     */
+    setModule: function (module) {
+        this.module = module;
     }
 });

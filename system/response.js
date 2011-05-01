@@ -4,9 +4,10 @@
  */
 
 var fs = require('fs-promise')
+  , ofs = require('fs')  //original fs library
   , http = require('http')
   , path = require('path')
-  , pump = require('sys').pump
+  , pump = require('util').pump
   , utils = require('./utils')
   , parsers = require('./parsers')
   , parseRange = utils.parseRange
@@ -79,14 +80,17 @@ exports.Response = new Class({
 
 
         fs.stat(path).then(function(stat){
-            var status = 200;
+            var status = 200,
+                stream = null;
 
+            core.debug('stat object back', stat);
+            
             // We have a Range request
             if (ranges) {
                 ranges = parseRange(stat.size, ranges);
                 // Valid
                 if (ranges) {
-                    var stream = fs.createReadStream(path, ranges[0])
+                    var stream = ofs.createReadStream(path, ranges[0])
                         , start = ranges[0].start
                         , end = ranges[0].end;
                     status = 206;
@@ -102,7 +106,9 @@ exports.Response = new Class({
                 }
                 // Stream the entire file
             } else {
-                var stream = fs.createReadStream(path);
+                core.debug('path to stream from', path);
+                stream = ofs.createReadStream(path);
+                core.debug('stream object created', stream);
                 self.header('Content-Length', stat.size);
             }
 
@@ -111,7 +117,7 @@ exports.Response = new Class({
             self.header('Accept-Ranges', 'bytes');
             self.resp.writeHead(status, self.headers);
             if (head) return self.end();
-            pump(stream, self);
+            pump(stream, self.resp);
         }, function (err) {
             delete self.headers['Content-Disposition'];
             if (fn) {
