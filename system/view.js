@@ -9,7 +9,8 @@ var fs = require('fs-promise'),
     Promise = require('promise').Promise,
     all = require('promise').all,
     path = require('path'),
-    jazz = require('jazz/lib/jazz');
+    jazz = require('jazz/lib/jazz'),
+    Response = require('./response').Response;
 
 
 var templates = {};
@@ -58,10 +59,13 @@ exports.file = new Class({
         } else {
             if (!nil(this.filePath)) {
                 this.response.sendfile(this.filePath);
+                return null;
             } else {
-                throw new Error('No file path supplied to view.');
+                //send back a 404 error
+                this.response.setStatus(Response.Codes.notFound);
+                return 'No file path supplied to view.';
             }
-            return null;
+            
         }
     },
 

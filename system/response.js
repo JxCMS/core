@@ -14,7 +14,7 @@ var fs = require('fs-promise')
   , mime = utils.mime;
 
 
-exports.Response = new Class({
+var Response = exports.Response = new Class({
 
     resp: null,
     req: null,
@@ -277,3 +277,21 @@ exports.Response = new Class({
     }
     
 });
+
+Response.Codes = {
+    ok: 200,
+    created: 201,
+    accepted: 202,
+    multiple: 300,
+    moved: 301,
+    notModified: 304,
+    temporaryRedirect: 307,
+    badRequest: 400,
+    unauthorized: 401,
+    forbidden: 403,
+    notFound: 404,
+    methodNotAllowed: 405,
+    InternalError: 500,
+    notImplemented: 501,
+    serviceUnavailable: 503
+};
