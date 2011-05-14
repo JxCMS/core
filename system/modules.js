@@ -2,8 +2,8 @@ var router = require('./router').Router,
     sys = require('sys'),
     fs = require('fs-promise'),
     p = require('path'),
-    Promise = require('promise').Promise,
-    Hmvc = require('hmvc');
+    Path = require('path'),
+    Promise = require('promise').Promise;
 
 //load model
 require('../models/modules.model');
@@ -30,9 +30,14 @@ exports.init = function(db, domain, router){
                         //this is a system module
                         core.log('get system modules for ' + domain);
                         fs.realpath('./modules/').then(function(path){
-                            Hmvc.add_modules([path + '/' + mod.get('name')], domain);
-                            modules[domain][mod.get('name')] = require(path+ '/' + mod.get('name') + '/' + mod.get('name'));
-                            return modules[domain][mod.get('name')].init(db, router, domain);
+                            var m = path + '/' + mod.get('name') + '/' + mod.get('name');
+                            if (Path.existsSync(m + '.js')) {
+                                modules[domain][mod.get('name')] = require(m);
+                                return modules[domain][mod.get('name')].init(db, router, domain);
+                            } else {
+                                core.log('path ' + m + '.js does not exist');
+                                return true;
+                            }
                         },function(err){
                             core.debug('error from finding a system module path', err);
                         }).then(function(){
@@ -42,9 +47,14 @@ exports.init = function(db, domain, router){
                         core.log('get domain specific modules for ' + domain);
                         //this is a domain specific module
                         fs.realpath('./domains/' + domain + '/modules/').then(function(path){
-                            Hmvc.add_modules([path + '/' + mod.get('name')], domain);
-                            modules[domain][mod.get('name')] = require( path + '/' + mod.get('name') + '/' + mod.get('name'));
-                            return modules[domain][mod.get('name')].init(db, router, domain);
+                            var m = path + '/' + mod.get('name') + '/' + mod.get('name');
+                            if (Path.existsSync(m + '.js')) {
+                                modules[domain][mod.get('name')] = require(m);
+                                return modules[domain][mod.get('name')].init(db, router, domain);
+                            } else {
+                                core.log('path ' + m + '.js does not exist');
+                                return true;
+                            }
                         },function(err){
                             core.debug('error from finding a system module path', err);
                         }).then(function(){

@@ -25,3 +25,6 @@
 [submodule "node_modules/hmvc"]
 	path = node_modules/hmvc
 	url = https://github.com/mixu/hmvc-cfs.git
+[submodule "node_modules/dust"]
+	path = node_modules/dust
+	url = https://github.com/akdubya/dustjs.git

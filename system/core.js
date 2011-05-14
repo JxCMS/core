@@ -35,10 +35,6 @@ var core = new Class({
             return null;
         }
     },
-
-    find: function(dir,file){
-        
-    },
     
     debug: function(label, obj) {
         sys.puts(label + ': ' + sys.inspect(obj));
