@@ -4,6 +4,7 @@
  */
 
 var fs = require('fs-promise')
+  , Promise = require('promise').Promise
   , ofs = require('fs')  //original fs library
   , http = require('http')
   , path = require('path')
@@ -14,7 +15,7 @@ var fs = require('fs-promise')
   , mime = utils.mime;
 
 
-exports.Response = new Class({
+var Response = exports.Response = new Class({
 
     resp: null,
     req: null,
@@ -25,9 +26,13 @@ exports.Response = new Class({
     content: null,
     status: null,
     cookie: null,
+    done: false,
 
     initialize: function(req, resp){
-        this.resp = resp;
+        if (!nil(resp)) {
+            this.resp = resp;
+        }
+        
         this.req = req;
         this.headers = {};
         this.content = '';
@@ -37,6 +42,8 @@ exports.Response = new Class({
 
     send: function(){
 
+        if (this.done || nil(this.resp)) return;
+        
         // Defaults
         var status = this.status || 200,
             content = this.content;
@@ -70,60 +77,69 @@ exports.Response = new Class({
      * @api public
      */
 
-    sendfile: function(path, fn){
+    sendfile: function(path){
         var self = this
             , ranges = self.req.getHeader('range')
-            , head = 'HEAD' == self.req.getMethod();
-
-        if (~path.indexOf('..')) return this.send(403);
-
-
-
-        fs.stat(path).then(function(stat){
-            var status = 200,
-                stream = null;
-
-            core.debug('stat object back', stat);
+            , head = 'HEAD' == self.req.getMethod()
+            , promise = new Promise();
             
-            // We have a Range request
-            if (ranges) {
-                ranges = parseRange(stat.size, ranges);
-                // Valid
+        if (nil(this.resp)) {
+            promise.resolve(false);
+            return promise;
+        }
+        
+        if (~path.indexOf('..')){
+            this.setStatus(403);
+            promise.resolve(true);
+        } else {
+            fs.stat(path).then(function(stat){
+                var status = 200,
+                    stream = null;
+    
+                core.debug('stat object back', stat);
+                
+                // We have a Range request
                 if (ranges) {
-                    var stream = ofs.createReadStream(path, ranges[0])
-                        , start = ranges[0].start
-                        , end = ranges[0].end;
-                    status = 206;
-                    self.header('Content-Range', 'bytes '
-                        + start
-                        + '-'
-                        + end
-                        + '/'
-                        + stat.size);
-                    // Invalid
+                    ranges = parseRange(stat.size, ranges);
+                    // Valid
+                    if (ranges) {
+                        var stream = ofs.createReadStream(path, ranges[0])
+                            , start = ranges[0].start
+                            , end = ranges[0].end;
+                        status = 206;
+                              self.header('Content-Range', 'bytes '
+                            + start
+                            + '-'
+                            + end
+                            + '/'
+                            + stat.size);
+                        // Invalid
+                    } else {
+                        return self.send(416);
+                    }
+                    // Stream the entire file
                 } else {
-                    return self.send(416);
+                    core.debug('path to stream from', path);
+                    stream = ofs.createReadStream(path);
+                    core.debug('stream object created', stream);
+                    self.header('Content-Length', stat.size);
                 }
-                // Stream the entire file
-            } else {
-                core.debug('path to stream from', path);
-                stream = ofs.createReadStream(path);
-                core.debug('stream object created', stream);
-                self.header('Content-Length', stat.size);
-            }
-
-            // Transfer
-            self.contentType(path);
-            self.header('Accept-Ranges', 'bytes');
-            self.resp.writeHead(status, self.headers);
-            if (head) return self.end();
-            pump(stream, self.resp);
-        }, function (err) {
-            delete self.headers['Content-Disposition'];
-            if (fn) {
-                fn(err, path);
-            }
-        } );
+    
+                // Transfer
+                self.contentType(path);
+                self.header('Accept-Ranges', 'bytes');
+                self.resp.writeHead(status, self.headers);
+                if (head) return self.end();
+                pump(stream, self.resp, function(err){
+                    self.done = true;
+                    promise.resolve(true);
+                });
+            }, function (err) {
+                delete self.headers['Content-Disposition'];
+                promise.reject(err);
+            } );
+        }
+        return promise;
     },
 
     /**
@@ -277,3 +293,23 @@ exports.Response = new Class({
     }
     
 });
+
+
+
+Response.Codes = {
+    ok: 200,
+    created: 201,
+    accepted: 202,
+    multiple: 300,
+    moved: 301,
+    notModified: 304,
+    temporaryRedirect: 307,
+    badRequest: 400,
+    unauthorized: 401,
+    forbidden: 403,
+    notFound: 404,
+    methodNotAllowed: 405,
+    InternalError: 500,
+    notImplemented: 501,
+    serviceUnavailable: 503
+};

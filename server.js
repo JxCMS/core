@@ -23,8 +23,7 @@ GLOBAL.core = new (require('./system/core').core)(config);
 var sys = require('sys'),
     Domain = require('./system/domain').Domain,
     http = require('http'),
-    when = require('promise').when,
-    Hmvc = require('hmvc');  //set up hmvc
+    when = require('promise').when;  //set up hmvc
 
 var domain = new Domain();
 domain.init().then(function(completed){
@@ -34,9 +33,17 @@ domain.init().then(function(completed){
 
         domain.dispatch(req,res).then(function(resp){
             res = resp;
-           return core.call('sendResponse', [res]);
+            if (!res.done) {
+                return core.call('sendResponse', [res]);
+            } else {
+                return;
+            }
         }).then(function(){
-            return res.send();
+            if (!res.sending) {
+                return res.send();
+            } else { 
+                return true;
+            }
         }).then(function(){
             return core.call('pageDone', res);
         });

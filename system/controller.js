@@ -61,9 +61,8 @@ var Controller_Main = exports.Controller_Main = new Class({
     before: function(request, response) {
         var promise = new Promise();
         //create the needed view
-        this.view = View.createView(request, response, {});
-        response.view = this.view;
-        core.debug('view object',this.view);
+        response.view = View.createView(request, response, {});
+        core.debug('view object',response.view);
         promise.resolve('true');
         return promise;
     },
@@ -71,7 +70,7 @@ var Controller_Main = exports.Controller_Main = new Class({
     after: function(request, response) {
         var promise = new Promise();
         //render the view
-        when(this.view.render(), function(content){
+        response.view.render().then(function(content){
             if (!nil(content)) {
                 response.setContent(content);
                 //core.debug('content we\'re returning',response.getContent());

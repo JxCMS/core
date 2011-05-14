@@ -114,28 +114,19 @@ exports.Domain = new Class({
         core.debug('domain for this request',domain);
         //grab the corresponding router
         var router = null;
+        req.domainIsAlias = false;
+        req.aliasedDomain = null;
         //first check to see if this domain is defined
-        if (this.domains[domain]) {
-            router = this.domains[domain].router;
-        } else {
-            //otherwise check through the aliases
-            Object.each(this.domains, function(d, key){
-                if (d.aliases.contains(domain)) {
-                    router = d.router;
-                    req.aliasedDomain = key;
-                    req.domainIsAlias = true;
-                }
-            },this);
+        var ret = this.getRouter(domain);
+        var router = ret.router;
+        if (ret.domainIsAlias) {
+            req.aliasedDomain = ret.aliasedDomain;
         }
-
-        //if we still don't have a router drop to the default
-        //TODO: Should this instead case provide an error page of some kind?
-        if (router === null) {
-            router = this.domains['default'].router;
-        }
+        req.domainIsAlias = ret.domainIsAlias;
         //add domain key to the request object (so controllers can pull
         //info from the domain object - also attached)
         req.domainObj = this;
+        var domainObj = this;
         req.domain = domain;
         //dispatch to that router
         var promise = new Promise.Promise();
@@ -143,10 +134,41 @@ exports.Domain = new Class({
             promise.resolve(resp);
         },function(err){
             //redirect to 404 error page
-            resp.redirect('/error/404');
-            promise.resolve(resp);
+            //resp.redirect('/error/404');
+            core.log('!!!heading to error routing.');
+            domainObj.redirect(req, resp, '/error/404').then(function(response){
+                promise.resolve(response);
+            });
+            
         });
         return promise;
+    },
+    
+    getRouter: function (domain) {
+        var ret = {
+            router: null,
+            domainIsAlias: false
+        };
+        if (this.domains[domain]) {
+            ret.router = this.domains[domain].router;
+        } else {
+            //otherwise check through the aliases
+            Object.each(this.domains, function(d, key){
+                if (d.aliases.contains(domain)) {
+                    ret.router = d.router;
+                    ret.aliasedDomain = key;
+                    ret.domainIsAlias = true;
+                }
+            },this);
+        }
+
+        //if we still don't have a router drop to the default
+        //TODO: Should this instead case provide an error page of some kind?
+        if (nil(ret.router)) {
+            ret.router = this.domains['default'].router;
+        }
+        
+        return ret;
     },
 
     getDb: function(domain) {
@@ -162,5 +184,25 @@ exports.Domain = new Class({
             },this);
         }
         return db;
+    },
+    
+    redirect: function (req, resp, url) {
+        var promise = new Promise.Promise();
+        //core.debug('request in Request Class', req.request);
+        var request = req.request;
+        //core.debug('cloned request',request);
+        request.url = '/error/404';
+        var r = new Request(request);
+        r.setParams(req.getParams);
+        r.aliasedDomain = req.aliasedDomain;
+        r.domainIsAlias = req.domainIsAlias;
+        r.domain = req.domain;
+        r.domainObj = req.domainObj;
+        var response = new Response(r, resp.resp),
+            ret = this.getRouter(r.domain);
+        ret.router.dispatch(r, response).then(function(){
+            promise.resolve(response);    
+        });
+        return promise;
     }
 });

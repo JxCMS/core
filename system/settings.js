@@ -26,7 +26,7 @@ var Settings = new Class({
                 }
                 ret = def;
             } else {
-                core.debug('doc found in setting.find', docs);
+                //core.debug('doc found in setting.find', docs);
                 docs.each(function(d){
                     d.settings.each(function(doc){
                         if (doc.key == parts[1]) {

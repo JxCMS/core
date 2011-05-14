@@ -9,12 +9,16 @@ var fs = require('fs-promise'),
     Promise = require('promise').Promise,
     all = require('promise').all,
     path = require('path'),
-    jazz = require('jazz/lib/jazz');
+    jazz = require('jazz/lib/jazz'),
+    dust = require('dust'),
+    Response = require('./response').Response;
 
 
 var templates = {};
 
 var helpers = {};
+
+var dustBase;
 
 exports.json = new Class({
 
@@ -52,17 +56,22 @@ exports.file = new Class({
     },
 
     render: function(){
+        var promise = new Promise();
         if (this.useContent) {
             this.response.contentType(this.type);
-            return this.content;
+            promise.resolve(this.content);
         } else {
             if (!nil(this.filePath)) {
-                this.response.sendfile(this.filePath);
+                this.response.sendfile(this.filePath).then(function(){
+                    promise.resolve(null);    
+                });
             } else {
-                throw new Error('No file path supplied to view.');
+                //send back a 404 error
+                this.response.setStatus(Response.Codes.notFound);
+                promise.resolve('No file path supplied to view.');
             }
-            return null;
         }
+        return promise;
     },
 
 
@@ -89,11 +98,15 @@ exports.html = new Class({
     data: null,
     domain: null,
     template: null,
+    request: null,
+    response: null,
 
     options: {},
 
     initialize: function(request, response, options){
         this.setOptions(options);
+        this.request = request;
+        this.response = response;
         if (request.domainIsAlias) {
             this.domain = request.aliasedDomain;
         } else {
@@ -101,8 +114,11 @@ exports.html = new Class({
         }
         this.setTemplate(request.getParam('action'));
         this.data = {};
-        //automatically add the partial support
-        this.data.partial = this.render.bind(this);
+        //grab the helpers for the current domain and
+        //add them to the view
+        Object.each(helpers[this.domain], function (item, key){
+            this[key] = item;
+        },this);
         response.contentType('.html');
     },
 
@@ -111,17 +127,42 @@ exports.html = new Class({
 
         core.debug('View object in render', this);
 
-        name = !nil(name) ? name : this.template;
-
-        if (!nil(templates[this.domain][name])) {
-            //merge in the helpers
-            var data = Object.merge(helpers[this.domain],this.data);
-            core.debug('data passed to jazz template', data);
-            templates[this.domain][name].eval(data, function(data){
-                core.debug('content returned by jazz', data);
-                promise.resolve(data);
+        core.call('preRender', [this]).then(function(){
+            name = !nil(name) ? name : this.template;
+            
+            core.log('returned from prerender');
+            core.debug('template name', name);
+    
+            //check for template
+            var n = this.domain + '_' + name,
+                template,
+                keys = Object.keys(dust.cache);
+            if (keys.contains(n)) {
+                template = n;
+            } else {
+                n = this.domain + '_' + this.data.theme + '_' + name;
+                if (keys.contains(n)) {
+                    template = n;
+                }
+            }
+            
+            core.debug('template chosen', template);
+            //grab the dust global context and push in our data
+            
+            //add data
+            this.set('request', this.request);
+            this.set('response', this.response);
+            this.set('domain', this.domain);
+            
+            //grab system helpers
+            var context = dustBase.push(helpers.system);
+            //then grab the domain specific helpers
+            context = context.push(helpers[this.domain]);
+            dust.render(template, context.push(this.data), function(err, out){
+                core.debug('content returned by dust', out);
+                promise.resolve(out);
             });
-        }
+        }.bind(this));
 
         return promise;
     },
@@ -175,7 +216,33 @@ exports.init = function(domain){
             core.log('no files for ' + dir);
         });
     });
+    
+    //create the dust global context
+    dustBase = dust.makeBase({});
+    core.debug('the dustBase object', dustBase);
+    //load system helpers (available in all contexts)
+    //modules are responsible for loading their own helpers which 
+    //would be domain specific.
+    load_helpers();
     return true;
+};
+
+/**
+ * Load all of the helpers in the helpers sub folder
+ */
+var load_helpers = function () {
+    fs.readdir(__dirname + '/helpers').then(function(files){
+        if (files.length > 0) {
+            files.each(function(file){
+                if (file.contains('.helper')) {
+                    var helpers = require(__dirname + '/helpers/' + file).helpers; 
+                    Object.each(helpers, function(fn, key){
+                        exports.registerHelper(key, fn, 'system');  
+                    });
+                }
+            });
+        }
+    });
 };
 
 var process_directory = function(dir, domain){
@@ -186,18 +253,19 @@ var process_directory = function(dir, domain){
         if (files.length > 0) {
             core.log('loading files for ' + dir + 'and domain ' + domain);
             files.each(function(file){
-                if (file.contains('.jazz')) {
+                if (file.contains('.dust')) {
                     fs.readFile(dir+'/'+file, 'utf-8').then(function(text){
-                        var name = path.basename(file, path.extname(file));
+                        var name =  path.basename(file, path.extname(file));
                         if (path.basename(dir) !== 'views') {
                             core.log('dir: ' + dir);
                             core.log('basename: ' + path.basename(dir));
-                            name = path.basename(dir) + '/' + name;
+                            name = path.basename(dir) + '_' + name;
                         }
-                        if (!Object.keys(templates[domain]).contains(name)) {
-                            core.debug('text in file ' + file, text);
-                            templates[domain][name] = jazz.compile(text);
-                            core.debug('current templates for domain ' + domain, templates[domain]);
+                        name = domain + '_' + name
+                        if (!Object.keys(dust.cache).contains(name)) {
+                            core.debug('text in file ' + name, text);
+                            //templates[domain][name] = jazz.compile(text);
+                            dust.loadSource(dust.compile(text, name));
                         }
                     }, function(err){
                         core.debug('got an error', err);
@@ -222,7 +290,16 @@ var process_directory = function(dir, domain){
     });
 };
 
+/**
+ * helpers can be single functions or objects. ControllerHelpers are really a 
+ * misnomer but I couldn't think of anything better to call them. These allow 
+ * you to pass information to a template by calling methods on the view.
+ */
 exports.registerHelper = function(name, fn, domain) {
+    core.log('registering ' + name + ' in the ' + domain + ' domain.');
+    if (nil(helpers[domain])) {
+        helpers[domain] = {};
+    }
     helpers[domain][name] = fn;
 };
 
@@ -231,4 +308,11 @@ exports.createView = function(request, response, options) {
     var view = new exports[format](request, response, options);
     core.debug('returned view object', view);
     return view;
-}
+};
+
+/**
+ * Override the dust.onLoad in order to look up missing files when used
+ * in partials and such (though since we precompile there should be no missing
+ * files
+ */
+
