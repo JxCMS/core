@@ -23,3 +23,7 @@ Settings.pre('save',function(next){
 
 
 mongoose.model('Setting', Settings);
+
+exports.models = {
+    Setting: Settings
+};

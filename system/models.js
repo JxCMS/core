@@ -29,3 +29,17 @@ exports.loadSystemModels = function(){
 };
 
 
+exports.register = function(file){
+    //load the file(s).
+    
+    //save the models for later reference
+    
+    //
+    
+};
+
+exports.get = function(model, request){
+    //get db connection
+    
+    //create the model and hand it back
+};

@@ -28,3 +28,6 @@
 [submodule "node_modules/dust"]
 	path = node_modules/dust
 	url = https://github.com/akdubya/dustjs.git
+[submodule "node_modules/mongodb"]
+	path = node_modules/mongodb
+	url = https://github.com/christkv/node-mongodb-native.git

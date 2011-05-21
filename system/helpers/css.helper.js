@@ -18,18 +18,10 @@ exports.helpers = {
         return chunk;
     },
     
-    'cssAddFile': function(chunk, context, bodies, params) {
+    'cssFile': function(chunk, context, bodies, params) {
         core.log('in cssAddFile helper');
         //check if css key defined
-        var head = context.current();
-        if (nil(head.css)) {
-            head.css = [];
-        } else if (typeOf(head.css) != 'array') {
-            head.css = Array.from(head.css);
-        }
-        head.css.push(params.file);
-        core.debug('context after push',context.get('css'));
-        return chunk;
+        return chunk.write(template.replace('{file}',params.file)).write('\n');
     }
     
 };
