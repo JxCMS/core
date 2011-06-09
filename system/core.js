@@ -4,9 +4,9 @@
  * Will use this as a way of creating an event system...
  */
 
-var  sys = require('sys'),
-    Promise = require('promise').Promise,
+var Promise = require('promise').Promise,
     all = require('promise').all,
+    log = require('logging'),
     when = require('promise').when;
 
 
@@ -37,12 +37,12 @@ var core = new Class({
     },
     
     debug: function(label, obj) {
-        sys.puts(label + ': ' + sys.inspect(obj));
+        log(label,obj);
         //sys.puts(' :: called from ' + arguments.callee.caller.name);
     },
     
     log: function(str) {
-        sys.log(str);
+        log(str);
 
     },
 

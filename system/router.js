@@ -40,8 +40,8 @@ var Route = new Class({
             //kill first part
             parts.shift();
             //and pop off the last two...
-            delete parts['index'];
-            delete parts['input'];
+            delete parts.index;
+            delete parts.input;
             sys.log('parts after pops: ' + sys.inspect(parts));
             //now, take the keys and the parts and match them up...
             params = {};
@@ -62,7 +62,7 @@ var Route = new Class({
             return {
                 controller: this.controller,
                 params: params
-            }
+            };
         }
         return false;
 

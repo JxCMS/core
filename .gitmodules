@@ -31,3 +31,18 @@
 [submodule "node_modules/mongodb"]
 	path = node_modules/mongodb
 	url = https://github.com/christkv/node-mongodb-native.git
+[submodule "node_modules/vows"]
+	path = node_modules/vows
+	url = https://github.com/cloudhead/vows.git
+[submodule "node_modules/should"]
+	path = node_modules/should
+	url = https://github.com/visionmedia/should.js.git
+[submodule "node_modules/expresso"]
+	path = node_modules/expresso
+	url = https://github.com/visionmedia/expresso.git
+[submodule "node_modules/logger"]
+	path = node_modules/logger
+	url = https://github.com/igo/nlogger.git
+[submodule "node_modules/logging"]
+	path = node_modules/logging
+	url = https://github.com/dylang/logging.git
