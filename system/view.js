@@ -9,8 +9,7 @@ var fs = require('fs-promise'),
     Promise = require('promise').Promise,
     all = require('promise').all,
     path = require('path'),
-    jazz = require('jazz/lib/jazz'),
-    dust = require('dust'),
+    //dust = require('dust'),
     Response = require('./response').Response;
 
 
@@ -130,8 +129,8 @@ exports.html = new Class({
         core.call('preRender', [this]).then(function(){
             name = !nil(name) ? name : this.template;
             
-            core.log('returned from prerender');
-            core.debug('template name', name);
+            logger.debug('returned from prerender');
+            logger.debug('template name', name);
     
             //check for template
             var n = this.domain + '_' + name,
@@ -146,7 +145,7 @@ exports.html = new Class({
                 }
             }
             
-            core.debug('template chosen', template);
+            logger.debug('template chosen', template);
             //grab the dust global context and push in our data
             
             //add data
@@ -159,7 +158,7 @@ exports.html = new Class({
             //then grab the domain specific helpers
             context = context.push(helpers[this.domain]);
             dust.render(template, context.push(this.data), function(err, out){
-                core.debug('content returned by dust', out);
+                logger.debug('content returned by dust', out);
                 promise.resolve(out);
             });
         }.bind(this));
@@ -185,7 +184,7 @@ exports.html = new Class({
 exports.init = function(domain){
     //var promise = new Promise();
 
-    core.log('In View.init() for ' + domain);
+    logger.debug('In View.init() for ' + domain);
     //call process_directories which also returns a promise
     //var ps = [];
     var dirs = ['domains/' + domain + '/views', 'domains/' + domain + '/modules','./modules'];
@@ -203,7 +202,7 @@ exports.init = function(domain){
         }).then(function(files){
             files.each(function(file){
                 var p;
-                core.log('basename of path = ' + path.basename(file));
+                logger.debug('basename of path = ' + path.basename(file));
                 if (path.basename(basePath) != 'views') {
                     p = basePath + '/' + file + '/views';
                 } else {
@@ -213,7 +212,7 @@ exports.init = function(domain){
             });
         }, function(err){
             //there are no files... ignore it and continue on
-            core.log('no files for ' + dir);
+            logger.debug('no files for ' + dir);
         });
     });
     
@@ -246,19 +245,19 @@ var load_helpers = function () {
 };
 
 var process_directory = function(dir, domain){
-    core.log('in process directory for dir ' + dir + ' and domain ' + domain);
+    logger.info('in process directory for dir ' + dir + ' and domain ' + domain);
     //load all files in the given directory
     fs.readdir(dir).then(function(files){
         core.debug('files for ' + dir + ' and domain ' + domain, files);
         if (files.length > 0) {
-            core.log('loading files for ' + dir + 'and domain ' + domain);
+            logger.info('loading files for ' + dir + 'and domain ' + domain);
             files.each(function(file){
                 if (file.contains('.dust')) {
                     fs.readFile(dir+'/'+file, 'utf-8').then(function(text){
                         var name =  path.basename(file, path.extname(file));
                         if (path.basename(dir) !== 'views') {
-                            core.log('dir: ' + dir);
-                            core.log('basename: ' + path.basename(dir));
+                            logger.info('dir: ' + dir);
+                            logger.info('basename: ' + path.basename(dir));
                             name = path.basename(dir) + '_' + name;
                         }
                         name = domain + '_' + name
@@ -274,11 +273,11 @@ var process_directory = function(dir, domain){
                 }
             });
         }
-        core.log('done processing ' + dir + ' on ' + domain);
+        logger.info('done processing ' + dir + ' on ' + domain);
 
     }, function(err){
         core.debug('got an error', err);
-        core.log('error was in process_directory for ' + dir + ' on ' + domain);
+        logger.info('error was in process_directory for ' + dir + ' on ' + domain);
         if (err.errno != 2) {
             core.debug('err',err);
             throw err;
@@ -296,7 +295,7 @@ var process_directory = function(dir, domain){
  * you to pass information to a template by calling methods on the view.
  */
 exports.registerHelper = function(name, fn, domain) {
-    core.log('registering ' + name + ' in the ' + domain + ' domain.');
+    logger.info('registering ' + name + ' in the ' + domain + ' domain.');
     if (nil(helpers[domain])) {
         helpers[domain] = {};
     }

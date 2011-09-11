@@ -11,19 +11,21 @@ exports.getDatabase = function(domain, options){
     var p = new Promise();
     
     if (nil(domains[domain])) {
-        core.log('Creating database for ' + domain);
+        logger.info('Creating database for ' + domain);
         var mongoserver, db_connector;
         domains[domain] = {};
         mongoserver = new mongodb.Server(options.host, options.port, options.server_options);
         domains[domain].server = mongoserver;
         
-        db_connector = new mongodb.Db(options.db, mongoserver, options.db_options);
+        logger.info('options in database',options);
+        
+        db_connector = new mongodb.Db(options.name, mongoserver, options.db_options);
         db_connector.open(function(err, db){
             if (err) {
-                core.log('Problem opening database');
+                logger.info('Problem opening database');
                 p.reject(err);
             } else {
-                core.log('Successfully opened database.');
+                logger.info('Successfully opened database.');
                 domains[domain].database = db;
                 domains[domain].count = 1;
                 core.call('gotDatabase' + domain.capitalize()).then(function(){
@@ -33,16 +35,16 @@ exports.getDatabase = function(domain, options){
         });
     } else {
         if (!nil(domains[domain].database)) {
-            core.log('database for ' + domain + ' already available');
+            logger.info('database for ' + domain + ' already available');
             ++domains[domain].count;
             p.resolve(domains[domain].database);
         } else {
             var fn = function(){
-                core.debug('domain in gotDatabase event',domain);
+                logger.debug('domain in gotDatabase event',domain);
                 ++domains[domain].count;
                 p.resolve(domains[domain].database);
             };
-            core.log('waiting for database for ' + domain);
+            logger.info('waiting for database for ' + domain);
             core.addEvent('gotDatabase' + domain.capitalize(),fn);
         }
     }
@@ -53,14 +55,14 @@ exports.close = function(domain){
     if (!nil(domains[domain])){
         --domains[domain].count;
         if (domains[domain].count === 0) {
-            core.debug('closing domain',domain);
+            logger.debug('closing domain',domain);
             domains[domain].database.close();
             delete domains[domain];
         } else {
-            core.log(domains[domain].count + ' references to the database for ' + domain + ' still exist');
+            logger.info(domains[domain].count + ' references to the database for ' + domain + ' still exist');
         }
     } else {
-        core.debug('domain already closed',domain);
+        logger.debug('domain already closed',domain);
     }
 };
 

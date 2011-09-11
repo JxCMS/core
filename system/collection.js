@@ -33,35 +33,50 @@ var Collection = exports.Collection = new Class({
      */
     model: Model,
     
+    name: 'default',
+    
+    ready: false,
+    initializing: false,
+    
     initialize: function(domain, options){
         this.setOptions(options);
         this.domain = domain;
+        Collection.registerCollection(domain,this.name,this);
     },
     
     init: function(){
         var p = new Promise();
-        core.log('in Collection.init()');
-        Database.getDatabase(this.domain, this.options).then(function(db){
-            core.log('got database in init');
-            this.db = db;
-            //get the collection object for this model
-            db.collection(this.options.name, function(err,collection){
-                if (err) {
-                    core.log('error getting collection object');
-                    core.log('rejecting promise');
-                    p.reject(err);
-                } else {
-                    core.log('received collection in init()');
-                    this.collection = collection;
-                    core.log('resolving promise');
-                    p.resolve(true);
-                }
+        if (!this.ready && !this.initializing) {
+            logger.info('in Collection.init()');
+            this.initializing = true;
+            Database.getDatabase(this.domain, this.options).then(function(db){
+                logger.info('got database in init');
+                this.db = db;
+                //get the collection object for this model
+                db.collection(this.name, function(err,collection){
+                    if (err) {
+                        logger.info('error getting collection object');
+                        logger.info('rejecting promise');
+                        p.reject(err);
+                    } else {
+                        logger.info('received collection in init()');
+                        this.collection = collection;
+                        this.ready = true;
+                        logger.info('resolving promise');
+                        p.resolve(true);
+                    }
+                }.bind(this));
             }.bind(this));
-        }.bind(this));
+        } else {
+            p.resolve(true);
+        }
         return p;
     },
     
     getModel: function(obj) {
+        if (nil(obj)) {
+            obj = {};
+        }
         var m = new this.model(obj, this);
         return m;
     },
@@ -81,14 +96,14 @@ var Collection = exports.Collection = new Class({
                     var results = [];
                     cursor.each(function(err,doc){
                         if (err) {
-                            core.debug('error in cursor.each of find()',err);
+                            logger.debug('error in cursor.each of find()',err);
                             throw err;
                         }
-                        core.debug('doc in find',doc);
+                        logger.debug('doc in find',doc);
                         if (!nil(doc)) {
                             results.push(this.getModel(doc));
                         } else {
-                            //core.debug('results returning from find()', results);
+                            //logger.debug('results returning from find()', results);
                             p.resolve(results);
                         }
                     }.bind(this));
@@ -101,13 +116,14 @@ var Collection = exports.Collection = new Class({
     
     save: function(obj, request){
         var p = new Promise(),
-            res = null;
+            res = null,
+            self = this;
         
         core.call('preModelSave',[obj, this]).then(function(){
-            core.log('in callback from preModelSave');
+            logger.info('in callback from preModelSave');
             var p2 = new Promise();
-            this.collection.save(obj,{safe:true},function(err,result){
-                core.log('in callback from collection.save()');
+            self.collection.save(obj,{safe:true},function(err,result){
+                logger.info('in callback from collection.save()');
                 if (err) {
                     p2.reject(err);
                 } else {
@@ -116,14 +132,14 @@ var Collection = exports.Collection = new Class({
                     } else {
                         res = result;
                     }
-                    res = this.getModel(res);
+                    res = self.getModel(res);
                     p2.resolve(true);
                }
-            }.bind(this));
+            });
             return p2;
-        }.bind(this)).then(function(){
-            return core.call('postModelSave', [res, this]);    
-        }.bind(this)).then(function(){
+        }).then(function(){
+            return core.call('postModelSave', [res, self]);    
+        }).then(function(){
             p.resolve(res);    
         });
         return p;
@@ -132,15 +148,23 @@ var Collection = exports.Collection = new Class({
     remove: function(obj){
         var p = new Promise();
         if (obj instanceof Select) {
+            logger.info('object is a Select instance');
             obj = obj.query;
         } else if (obj instanceof Model) {
-            obj = obj.getObject();
+            logger.info('object is an instance of Model');
+            if (!nil(obj._id)) {
+                obj = {'_id': obj._id};
+            } else {
+                obj = obj.getObject();
+            }
         }
+        logger.debug('object used to query',obj);
         this.collection.remove(obj, {safe:true}, function(err,results){
             if (err) {
-                core.debug('error removing record',err);
+                logger.debug('error removing record',err);
                 p.reject(err);
             } else {
+                logger.info('removed ' + results + ' docs(s)');
                 p.resolve(results);
             }
         });
@@ -151,11 +175,13 @@ var Collection = exports.Collection = new Class({
         var p = new Promise(),
             self = this;
         core.call('preCollectionFindOne',[id,request]).then(function(){
-            self.collection.findOne(id,function(err,doc){
-                if (err) {
-                    p.reject(err);
+            logger.debug('id passed to findOne',id);
+            self.collection.findOne({'_id': id},function(err,doc){
+                if (err || doc === undefined) {
+                    logger.info('no docs returned in findOne');
+                    p.reject(err || 'No docs returned');
                 } else {
-                    core.debug('doc returned',doc);
+                    logger.debug('doc returned',doc);
                     p.resolve(self.getModel(doc));
                 }
             });
@@ -174,8 +200,8 @@ var Collection = exports.Collection = new Class({
             //this is a range. 
             parts = expr.match(/^(.*?)([<>=]{1,2})(.*?)([<>=]{1,2})(.*)$/);
             
-            core.debug('original expression', expr);
-            core.debug('parts matched on range', parts);
+            logger.debug('original expression', expr);
+            logger.debug('parts matched on range', parts);
             
             //remove index and input
             delete parts.index;
@@ -183,7 +209,7 @@ var Collection = exports.Collection = new Class({
             //throw away the first element
             parts.shift();
             
-            core.debug('parts matched on range', parts);
+            logger.debug('parts matched on range', parts);
             //put it together
             
             
@@ -217,12 +243,12 @@ var Collection = exports.Collection = new Class({
                     oper = '$gte'
                 }   
             }
-            core.debug('op',op);
-            core.debug('oper',oper);
+            logger.debug('op',op);
+            logger.debug('oper',oper);
             var o = obj[parts[2].trim()] = {};
             o[op] = parts[0].trim();
             o[oper] = parts[4].trim();
-            core.debug('final object',obj);
+            logger.debug('final object',obj);
         } else {
             //not a range
             comp = this.determineComparator(expr);
@@ -269,7 +295,7 @@ var Collection = exports.Collection = new Class({
         }
         
         var obj = {oper: oper, op: op}; 
-        core.debug('returned operators', obj);
+        logger.debug('returned operators', obj);
         return obj;
     },
     
@@ -279,3 +305,20 @@ var Collection = exports.Collection = new Class({
         
 });
 
+Collection.collections = {};
+
+Collection.getCollection = function(domain, coll){
+    if (!nil(Collection.collections[domain]) && !nil(Collection.collections[domain][coll])) {
+            return Collection.collections[domain][coll];
+    } else {
+        return false;
+    }
+};
+
+Collection.registerCollection = function(domain,name,coll){
+    if (nil(Collection.collections[domain])) {
+        Collection.collections[domain] = {};
+    }
+    Collection.collections[domain][name] = coll;
+    logger.info('collection ' + name + ' registered for domain ' + domain);
+};

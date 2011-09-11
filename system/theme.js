@@ -7,9 +7,9 @@ var Promise = require('promise').Promise,
 
 
 Theme.setBase = function(view, promises){
-    core.log('in Theme.setBase');
-    //core.debug('Settings object', Settings);
-    //core.debug('view object in theme.setBase', view);
+    logger.info('in Theme.setBase');
+    //logger.debug('Settings object', Settings);
+    //logger.debug('view object in theme.setBase', view);
     
     var req = view.request,
         resp = view.response,
@@ -23,7 +23,7 @@ Theme.setBase = function(view, promises){
 
         var promise = new Promise();
         when(s.find('theme.activeTheme', req, 'theme1', true), function(theme){
-            core.log('Theme directory = ' + theme);
+            logger.info('Theme directory = ' + theme);
             view.set('theme',theme);
             promise.resolve(true);
         });

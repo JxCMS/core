@@ -54,36 +54,36 @@ exports.Domain = new Class({
          var self = this;
          fs.realpath(dir).then(function(path){
              dir = filePath = path;
-             core.log('Directory path: ' + path);
+             logger.info('Directory path: ' + path);
              return fs.readdir(path);
          }).then(function(files) {
             //sys.log(sys.inspect(files));
             var promises = [];
             files.each(function(file){
                 d = p.basename(file);
-                core.debug('dir', dir);
+                logger.debug('dir', dir);
                 self.domains[d] = {};
                 //then grab the config
                 var cfg = self.domains[d].cfg = require(dir + '/' + d +'/config/db.cfg').config;
-                core.debug('config',cfg);
+                logger.debug('config',cfg);
                 //also pull in the aliases for this domain
                 self.domains[d].aliases = require(dir + '/' + d +'/config/alias.cfg').alias;
-                core.debug('aliases for ' + d, self.domains[d].aliases);
+                logger.debug('aliases for ' + d, self.domains[d].aliases);
                 
                 //create router
                 var router = self.domains[d].router = new Router();
-                core.debug('router for ' + d,router);
+                logger.debug('router for ' + d,router);
                 
                 //load up modules and ready all views
                 promises.push(Modules.init(d, router, cfg));
-                core.log('back from modules.init');
+                logger.info('back from modules.init');
                 View.init(d);
-                core.log('back from View.init()');
+                logger.info('back from View.init()');
             }, this);
-            core.log('# of promises returned = ' + promises.length);
+            logger.info('# of promises returned = ' + promises.length);
              
             Promise.all(promises).then(function(){
-                core.log('all promises returned');
+                logger.info('all promises returned');
                 promise.resolve(true);     
             });
          });
@@ -100,13 +100,13 @@ exports.Domain = new Class({
         var domain;
         if (host.contains(':')) {
             var parts = host.split(':');
-            core.debug('parts of host',parts);
+            logger.debug('parts of host',parts);
             domain = parts[0];
-            core.log('Domain is ' + domain);
+            logger.info('Domain is ' + domain);
         } else {
             domain = host;
         }
-        core.debug('domain for this request',domain);
+        logger.debug('domain for this request',domain);
         //grab the corresponding router
         var router = null;
         req.domainIsAlias = false;
@@ -130,7 +130,7 @@ exports.Domain = new Class({
         },function(err){
             //redirect to 404 error page
             //resp.redirect('/error/404');
-            core.log('!!!heading to error routing.');
+            logger.info('!!!heading to error routing.');
             domainObj.redirect(req, resp, '/error/404').then(function(response){
                 promise.resolve(response);
             });
@@ -167,7 +167,7 @@ exports.Domain = new Class({
     },
 
     getDbOptions: function(domain) {
-        core.log('getting database connection for domain ' + domain);
+        logger.info('getting database connection for domain ' + domain);
         var opts;
         if (this.domains[domain]) {
             opts = this.domains[domain].cfg;
@@ -183,9 +183,9 @@ exports.Domain = new Class({
     
     redirect: function (req, resp, url) {
         var promise = new Promise.Promise();
-        //core.debug('request in Request Class', req.request);
+        //logger.debug('request in Request Class', req.request);
         var request = req.request;
-        //core.debug('cloned request',request);
+        //logger.debug('cloned request',request);
         request.url = '/error/404';
         var r = new Request(request);
         r.setParams(req.getParams);

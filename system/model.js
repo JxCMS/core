@@ -36,19 +36,21 @@ var Model = exports.Model = new Class({
     },
     
     save: function(request){
-        var p = new Promise();
+        var p = new Promise(),
+            res;
         core.call('preModelSave',[this,request]).then(function(){
             return this._collection.save(this.getObject());
-        }).then(function(result){
+        }.bind(this)).then(function(result){
+            res = result;
             //set the id returned.
             this._id = result._id;
             return core.call('postModelSaveSuccess',[this,request]);
-        },function(err){
+        }.bind(this),function(err){
             core.call('postModelSaveError',[this,request,err]);
             p.reject(err);
-        }).then(function(){
-            p.resolve(result);
-        });
+        }.bind(this)).then(function(){
+            p.resolve(res);
+        }.bind(this));
         return p;
     },
     

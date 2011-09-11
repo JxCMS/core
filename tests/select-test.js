@@ -16,7 +16,7 @@ dbConfig.name = 'default';
 
 module.exports = {
     'should be instance of Select': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing');
@@ -26,7 +26,7 @@ module.exports = {
         });
     },  
     'should have 2 fields': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing fields');
@@ -35,7 +35,7 @@ module.exports = {
         });
     },
     'tests skip': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing skip');
@@ -44,7 +44,7 @@ module.exports = {
         });
     },
     'tests limit': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing limit');
@@ -53,7 +53,7 @@ module.exports = {
         });
     },
     'tests sortAsc': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing sortAsc');
@@ -62,7 +62,7 @@ module.exports = {
         });
     },
     'tests sortDesc': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing sortDesc');
@@ -71,7 +71,7 @@ module.exports = {
         });
     },
     'tests multiple sort': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing sortAsc');
@@ -85,7 +85,7 @@ module.exports = {
         });
     },
     'tests where': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing where');
@@ -97,7 +97,7 @@ module.exports = {
         });
     },
     'tests where with and': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing where with and');
@@ -111,7 +111,7 @@ module.exports = {
         });
     },
     'tests where with or': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing where with or');
@@ -128,7 +128,7 @@ module.exports = {
         });
     },
     'tests in': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing in');
@@ -140,7 +140,7 @@ module.exports = {
         });
     },
     'tests nin': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing nin');
@@ -152,7 +152,7 @@ module.exports = {
         });
     },
     'tests all': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing all');
@@ -164,7 +164,7 @@ module.exports = {
         });
     },
     'tests exists': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing exists');
@@ -176,7 +176,7 @@ module.exports = {
         });
     },
     'tests mod': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing mod');
@@ -188,7 +188,7 @@ module.exports = {
         });
     },
     'tests size': function(){
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
             core.log('got select ... testing size');

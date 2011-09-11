@@ -27,7 +27,7 @@ var Controller_Main = exports.Controller_Main = new Class({
 
         var action = request.getParam('action') + '_action';
         if (typeOf(this[action]) === 'function') {
-            core.log('Good path in Controller.... route it!');
+            logger.info('Good path in Controller.... route it!');
 
             var self = this;
 
@@ -49,7 +49,7 @@ var Controller_Main = exports.Controller_Main = new Class({
 
         } else {
             //redirect to 404 error page
-            core.log('Bad path in Controller... throw to the 404 error will ya!');
+            logger.info('Bad path in Controller... throw to the 404 error will ya!');
             promise.reject('Action <' + action + '> does not exist on this controller.');
         }
 

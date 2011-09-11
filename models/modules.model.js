@@ -1,5 +1,6 @@
 
-var Model = require('../system/model').Model;
+var Collection = require('../system/collection').Collection,
+    Model = require('../system/model').Model;
 
 
 exports.model = new Class({
@@ -14,4 +15,14 @@ exports.model = new Class({
     setActive: function(active) {
         this.activated = active;
     }
+});
+
+
+exports.Collection = new Class({
+
+    Extends: Collection,
+    
+    model: exports.model,
+    
+    name: 'modules'
 });

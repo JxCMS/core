@@ -15,10 +15,13 @@ var domain = 'test';
 
 dbConfig.name = 'default';
 
-module.exports = {
-    'should return the same document': function(){
+var coll = new Collection(domain,dbConfig);
+coll.init().then(function(){
+
+    core.log('start tests');
+    exports['should return the same document'] = function(){
         core.log('test: should return the same document');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         coll.init().then(function(){
             core.log('in init callback for test: should return the same document');
             var obj = {
@@ -28,14 +31,14 @@ module.exports = {
             };
             coll.save(obj).then(function(result){
                 core.log('in save callback for test: should return the same document');
-                result.should.eql(obj);
+                result.getObject().should.eql(obj);
                 coll.close(domain);
             });
         });
-    },
-    'should return a saved document with an id': function(){
+    };
+    exports['should return a saved document with an id'] = function(){
         core.log('test: should return a saved document with an id');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         coll.init().then(function(){
             core.log('in init callback for test: should return a saved document with an id');
             var obj = {
@@ -48,28 +51,28 @@ module.exports = {
                 coll.close(domain);
             });
         });
-    },
-    'should be instance of Collection': function(){
+    };
+    exports['should be instance of Collection'] = function(){
         core.log('test: should be instance of Collection');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         coll.init().then(function(){
             core.log('in init callback for test: should be instance of Collection');
             coll.should.be.an.instanceof(Collection);
             coll.close(domain);
         });
-    },
-    'should return an instance of Select': function(){
+    };
+    exports['should return an instance of Select'] = function(){
         core.log('test: should return an instance of Select');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         coll.init().then(function(){
             core.log('in init callback for test: should return an instance of Select');
             coll.getSelect().should.be.an.instanceof(Select);
             coll.close(domain);
         });
-    },
-    'tests save, findOne, and remove': function(){
+    };
+    exports['tests save, findOne, and remove'] = function(){
         core.log('test: tests save, findOne, and remove');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         coll.init().then(function(){
             core.log('in init callback for test: tests save, findOne, and remove');
             
@@ -81,82 +84,87 @@ module.exports = {
             coll.save(obj).then(function(result){
                 core.log('testing _id property');
                 result.should.have.property('_id');
+                core.debug('result from save()',result.getObject());
                 //then do a findOne based on _id
                 return coll.findOne(result._id,{});
             }).then(function(result){
                 //make sure we got a valid model back
                 core.log('testing the return of a model instance from findOne()');
+                core.debug('result from findOne()',result.getObject());
                 result.should.be.an.instanceof(Model);
                 //then remove it
-                return coll.remove(result.getObject());
+                var query = result.getObject();
+                core.debug('object used in remove',query);
+                return coll.remove(query);
             }).then(function(count){
                 core.log('testing that the count of removed records was 1');
+                core.log('count = ' + count);
                 count.should.equal(1);
                 coll.close(domain);
             });
             
         });
-    },
-    'should translate expression (field = value)': function(){
+    };
+    exports['should translate expression (field = value)'] = function(){
         core.log('test: should translate expression (field = value)');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         var obj = coll.translateExpression('field = value');
         obj.should.eql({field: 'value'});
-    },
-    'should translate expression (field != value)': function(){
+    };
+    exports['should translate expression (field != value)'] = function(){
         core.log('test: should translate expression (field != value)');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         var obj = coll.translateExpression('field != value');
         obj.should.eql({field: {$ne: 'value'}});
-    },
-    'should translate expression (field > value)': function(){
+    };
+    exports['should translate expression (field > value)'] = function(){
         core.log('test: should translate expression (field > value)');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         var obj = coll.translateExpression('field > value');
         obj.should.eql({field: {$gt: 'value'}});
-    },
-    'should translate expression (field < value)': function(){
+    };
+    exports['should translate expression (field < value)'] = function(){
         core.log('test: should translate expression (field < value)');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         var obj = coll.translateExpression('field < value');
         obj.should.eql({field: {$lt: 'value'}});
-    },
-    'should translate expression (field >= value)': function(){
+    };
+    exports['should translate expression (field >= value)'] = function(){
         core.log('test: should translate expression (field >= value)');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         var obj = coll.translateExpression('field >= value');
         obj.should.eql({field: {$gte: 'value'}});
-    },
-    'should translate expression (field <= value)': function(){
+    };
+    exports['should translate expression (field <= value)'] = function(){
         core.log('test: should translate expression (field <= value)');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         var obj = coll.translateExpression('field <= value');
         obj.should.eql({field: {$lte: 'value'}});
-    },
-    'should translate expression (value1 < field < value2)': function(){
+    };
+    exports['should translate expression (value1 < field < value2)'] = function(){
         core.log('test: should translate expression (value1 < field < value2)');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         var obj = coll.translateExpression('value1 < field < value2');
         obj.should.eql({field: {$gt: 'value1', $lt: 'value2'}});
-    },
-    'should translate expression (value1 >= field >= value2)': function(){
+    };
+    exports['should translate expression (value1 >= field >= value2)'] = function(){
         core.log('test: should translate expression (value1 >= field >= value2)');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         var obj = coll.translateExpression('value1 >= field >= value2');
         obj.should.eql({field: {$gte: 'value2', $lte: 'value1'}});
-    },
-    'should translate "or" expression (field < value)': function(){
+    };
+    exports['should translate "or" expression (field < value)'] = function(){
         core.log('test: should translate expression (value1 >= field >= value2)');
-        var coll = new Collection(domain,Model,dbConfig);
+        var coll = Collection.getCollection(domain,'default');
         var obj = coll.translateExpression('field < value', true);
         obj.should.eql({$or: [ {field: {$lt: 'value'}}]});
-    },
-    'tests save, find, and remove': function(){
+    };
+    exports['tests save, find, and remove'] = function(){
         core.log('test: tests save, findOne, and remove');
-        var coll = new Collection(domain,Model,dbConfig),
+        var coll = Collection.getCollection(domain,'default'),
             count = null;
         coll.init().then(function(){
-            core.log('in init callback for test: tests save, findOne, and remove');
+            core.log('in init callback for test: tests save, find, and remove');
             
             //first save a record
             var obj = {
@@ -174,16 +182,20 @@ module.exports = {
                 return coll.find(s,{});
             }).then(function(results){
                 //make sure we got a valid model back
-                core.log('testing the return of a array of model instances from find()');
-                results.should.be.an.instanceof(Array);
-                results[0].should.be.an.instanceof(Model);
+                core.log('testing the return of an array of model instances from find()');
                 count = results.length;
+                core.log('number of results returned = ' + count);
+                results.should.be.an.instanceof(Array);
+                var m = results[0];
+                m.should.be.an.instanceof(Model);
+                
                 //then remove them
                 var i = [];
                 results.each(function(res){
                    i.push(res._id); 
                 });
                 var query = coll.getSelect().in('_id',i);
+                //core.debug('select object passed to remove',query);
                 return coll.remove(query);
             }).then(function(count){
                 core.log('testing that the count of removed records equals the # of records found');
@@ -192,5 +204,5 @@ module.exports = {
             });
             
         });
-    },
-};
+    };
+});

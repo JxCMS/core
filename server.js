@@ -1,24 +1,35 @@
 /**
  * This is the main file for the cms. Run it by typing
  *
- * node cms.js
+ * node server.js
  *
  * at a command line.
  *
  * 
  */
-
-//add current system paths to require
-//DEPRECATED function - leave it here though until we can test everything without it
-//require.paths.unshift('./vendor', './system', './config', './models','./modules');
-
 //require mootools so we can use Class everywhere
 require('mootools').apply(GLOBAL);
 
-var config = require('./config/global').global;  //global config
 
+var config = require('./config/global').global,  //global config
+    winston = require('winston');
+    
 //setup the global core object
 GLOBAL.core = new (require('./system/core').core)(config);
+
+//setup the global logging object
+GLOBAL.logger = new (winston.Logger)({
+    transports: [
+        new (winston.transports.Console)({
+            level: config.logger.console.level
+        }),
+        new (winston.transports.File)({ 
+            filename: config.logger.file.file, 
+            level: config.logger.file.level 
+        })
+    ]
+});
+logger.emitErrs = false;
 
 var sys = require('sys'),
     Domain = require('./system/domain').Domain,
@@ -27,10 +38,8 @@ var sys = require('sys'),
 
 var domain = new Domain();
 domain.init().then(function(completed){
-    core.log('initializing server...');
+    logger.info('initializing server...');
     http.createServer(function (req, res) {
-
-
         domain.dispatch(req,res).then(function(resp){
             res = resp;
             if (!res.done) {
@@ -48,7 +57,7 @@ domain.init().then(function(completed){
             return core.call('pageDone', res);
         });
     }).listen(8000);
-    core.log('Server listening on port 8000');
+    logger.info('Server listening on port 8000');
 });
 
 
