@@ -12,24 +12,39 @@ require('mootools').apply(GLOBAL);
 
 
 var config = require('./config/global').global,  //global config
-    winston = require('winston');
+    winston = require('winston'),
+    server;
     
 //setup the global core object
 GLOBAL.core = new (require('./system/core').core)(config);
+
+process.on('uncaughtException',function(err){
+   //prevent the server from receiving new requests.
+   server.close();
+   //log the exception
+   core.debug('Uncaught Exception:\n',err.message);
+   core.debug('arguments:',err.arguments);
+   core.debug('stack trace:' + err.stack);
+   //give winston time to flush the logs.
+   setTimeout(function(){ process.exit(1);},1000);
+});
 
 //setup the global logging object
 GLOBAL.logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({
-            level: config.logger.console.level
+            level: config.logger.console.level,
         }),
         new (winston.transports.File)({ 
             filename: config.logger.file.file, 
-            level: config.logger.file.level 
+            level: config.logger.file.level,
+            json: false
         })
     ]
 });
 logger.emitErrs = false;
+
+
 
 var sys = require('sys'),
     Domain = require('./system/domain').Domain,
@@ -38,8 +53,8 @@ var sys = require('sys'),
 
 var domain = new Domain();
 domain.init().then(function(completed){
-    logger.info('initializing server...');
-    http.createServer(function (req, res) {
+    core.info('initializing server...');
+    server = http.createServer(function (req, res) {
         domain.dispatch(req,res).then(function(resp){
             res = resp;
             if (!res.done) {
@@ -56,8 +71,9 @@ domain.init().then(function(completed){
         }).then(function(){
             return core.call('pageDone', res);
         });
-    }).listen(8000);
-    logger.info('Server listening on port 8000');
+    });
+    server.listen(8000);
+    core.info('Server listening on port 8000');
 });
 
 

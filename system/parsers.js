@@ -148,7 +148,7 @@ exports.Cookie = new Class({
     },
 
     decode: function(str){
-        logger.info('cookie string passed to decode: ' + str);
+        core.info('cookie string passed to decode: ' + str);
         var obj = {},
             pairs = str.split(/[;,] */);
         for (var i = 0, len = pairs.length; i < len; ++i) {
@@ -166,7 +166,7 @@ exports.Cookie = new Class({
             }
         }
 
-        logger.debug('Object returning from cookie.decode', obj);
+        core.debug('Object returning from cookie.decode', obj);
 
         return obj;
     }

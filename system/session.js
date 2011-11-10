@@ -22,7 +22,7 @@ var Session = new Class({
         this.response = response;
         this.request = request;
 
-        logger.info('in session initialize');
+        core.info('in session initialize');
     },
 
     init: function() {
@@ -40,13 +40,13 @@ var Session = new Class({
             this.coll.init().then(function(){
                 return this.coll.findOne(sessionId, this.request);
             }.bind(this)).then(function(result){
-                logger.info('found record for session id: ' + sessionId);
+                core.info('found record for session id: ' + sessionId);
                 this.data = JSON.parse(doc.data);
                 this.model = doc;
                 promise.resolve(true);
             }.bind(this), function(err){
                 //else, save an empty data string to get an id
-                logger.info('Did NOT find record for session id: ' + sessionId + ' :: Creating NEW session ID');
+                core.info('Did NOT find record for session id: ' + sessionId + ' :: Creating NEW session ID');
                 s = this.coll.getModel();
                 s.data = JSON.stringify({});
                 s.save(this.request).then(function(result){
@@ -63,7 +63,7 @@ var Session = new Class({
                 s.data = JSON.stringify({});
                 s.save(this.request).then(function(result){
                     self.sessionId = s._id;
-                    //logger.debug('response object in session.init', self.response);
+                    //core.debug('response object in session.init', self.response);
                     self.response.setCookie('sessionid', self.sessionId);
                     self.model = s;
                     promise.resolve(true);
@@ -79,8 +79,8 @@ var Session = new Class({
 
     'set': function(key, value) {
         this.data[key] = value;
-        logger.info('added key <' + key + '> with value <' + value + '>');
-        logger.debug('local data object', this.data);
+        core.info('added key <' + key + '> with value <' + value + '>');
+        core.debug('local data object', this.data);
     },
 
     'get': function(key) {
@@ -98,10 +98,10 @@ var Session = new Class({
             s = this.coll.getModel();
         }
         s.data = JSON.stringify(this.data);
-        logger.info('JSON encoded data: ' + s.data);
+        core.info('JSON encoded data: ' + s.data);
         //save it to the DB.
         s.save(this.request).then(function(result){
-            logger.info('session data saved for session id: ' + s._id);
+            core.info('session data saved for session id: ' + s._id);
         },function(err){
             throw err;
         });
@@ -113,14 +113,14 @@ var createSession = function(request, response, promises) {
     var sess = new Session(request, response);
     var promise = new Promise();
     sess.init().then(function(){
-        //logger.debug('session on request', request.session);
+        //core.debug('session on request', request.session);
         promise.resolve();
     });
     promises.push(promise);
 }
 
 var saveSession = function (response, promises) {
-    //logger.debug('response in saveSession', response);
+    //core.debug('response in saveSession', response);
     if (!nil(response.session)) {
         response.session.save();
     }
@@ -131,7 +131,7 @@ core.addEvents({
     'beforeDispatch': createSession,
     'pageDone': saveSession,
     'sendResponse': function(request, response) {
-        logger.debug('request has session in sendResponse', !nil(request.session));
-        logger.debug('response has session in sendResponse', !nil(response.session));
+        core.debug('request has session in sendResponse', !nil(request.session));
+        core.debug('response has session in sendResponse', !nil(response.session));
     }
 });

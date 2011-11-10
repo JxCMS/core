@@ -37,3 +37,9 @@
 [submodule "node_modules/node-template"]
 	path = node_modules/node-template
 	url = git@github.com:jonlb/node-template.git
+[submodule "node_modules/stack-trace"]
+	path = node_modules/stack-trace
+	url = https://github.com/felixge/node-stack-trace.git
+[submodule "node_modules/async"]
+	path = node_modules/async
+	url = https://github.com/caolan/async.git

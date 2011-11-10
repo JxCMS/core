@@ -6,8 +6,8 @@
 
 var Promise = require('promise').Promise,
     all = require('promise').all,
-    log = require('logging'),
-    when = require('promise').when;
+    when = require('promise').when,
+    util = require('util');
 
 
 var core = new Class({
@@ -24,7 +24,6 @@ var core = new Class({
 
     initialize: function(options){
         this.setOptions(options);
-        
 
     },
 
@@ -37,12 +36,16 @@ var core = new Class({
     },
     
     debug: function(label, obj) {
-        log(label,obj);
+        logger.debug(label + " " + util.inspect(obj,false,null));
         //sys.puts(' :: called from ' + arguments.callee.caller.name);
     },
     
-    log: function(str) {
-        log(str);
+    info: function(str,obj) {
+        if (obj !== null && obj !== undefined) {
+            logger.info(str + " " + util.inspect(obj,false,null));
+        } else {
+            logger.info(str);
+        }
 
     },
 
@@ -53,14 +56,14 @@ var core = new Class({
         this.fireEvent(eventName, args);
         var promise = new Promise();
         if (promises.length > 0) {
-            this.log('promises were returned from function call ' + eventName + '... wait for them');
+            this.info('promises were returned from function call ' + eventName + '... wait for them');
             var self = this;
             all(promises).then(function(result){
-                self.log('resolving promises in core.call for ' + eventName);
+                self.info('resolving promises in core.call for ' + eventName);
                 promise.resolve(result);
             });
         } else {
-            this.log('no promises returned from function call ' + eventName);
+            this.info('no promises returned from function call ' + eventName);
             promise.resolve(true);
         }
         return promise;

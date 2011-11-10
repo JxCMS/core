@@ -16,39 +16,41 @@ var modules = {},
 exports.init = function(domain, router, options){
     var promise = new Promise();
     
-    logger.info('In Modules.init() for ' + domain);
+    core.info('In Modules.init() for ' + domain);
     modules[domain] = {};
     var opts = Object.clone(options);
-    logger.debug('options in module.init() = ',opts);
+    core.debug('options in module.init() = ',opts);
     coll = new Collection(domain, opts);
     var select = coll.getSelect();
         
     coll.init().then(function(){
+        core.debug('returned from collection.init()... running find');
         return coll.find(select, {});
     }.bind(this)).then(function(results){
+        core.debug('returned from find.');
         if (results.length > 0) {
-            logger.debug('results returned: ', results);
+            core.debug('results returned: ', results);
             results.each(function(mod){
                 if (mod.activated) {
                     if (mod.permanent) {
                         //this is a system module
-                        logger.info('get system modules for ' + domain);
+                        core.info('get system modules for ' + domain);
                         fs.realpath('./modules/').then(function(path){
                             var m = path + '/' + mod.name + '/' + mod.name;
                             if (Path.existsSync(m + '.js')) {
                                 modules[domain][mod.name] = require(m);
                                 return modules[domain][mod.name].init(router, domain, opts);
                             } else {
-                                logger.info('path ' + m + '.js does not exist');
+                                core.info('path ' + m + '.js does not exist');
                                 return true;
                             }
                         },function(err){
-                            logger.debug('error from finding a system module path', err);
+                            core.debug('error from finding a system module path', err);
                         }).then(function(){
                             core.fireEvent('moduleInitDone', [mod.name]);
                         });
                     } else {
-                        logger.info('get domain specific modules for ' + domain);
+                        core.info('get domain specific modules for ' + domain);
                         //this is a domain specific module
                         fs.realpath('./domains/' + domain + '/modules/').then(function(path){
                             var m = path + '/' + mod.name + '/' + mod.name;
@@ -56,11 +58,11 @@ exports.init = function(domain, router, options){
                                 modules[domain][mod.name] = require(m);
                                 return modules[domain][mod.name].init(router, domain, options);
                             } else {
-                                logger.info('path ' + m + '.js does not exist');
+                                core.info('path ' + m + '.js does not exist');
                                 return true;
                             }
                         },function(err){
-                            logger.debug('error from finding a system module path', err);
+                            core.debug('error from finding a system module path', err);
                         }).then(function(){
                             core.fireEvent('moduleInitDone', [mod.name]);
                         });
@@ -73,7 +75,7 @@ exports.init = function(domain, router, options){
         //call our function for searching and defining modules
         findModules(results, domain);
 
-        logger.info('resolving promise in modules.init() for ' + domain);
+        core.info('resolving promise in modules.init() for ' + domain);
         promise.resolve(true);
     });
         
@@ -102,7 +104,7 @@ function findModules(results, domain){
     
     //scan module directories
     //add them to the database but do NOT activate/init them
-    logger.info('In findModules');
+    core.info('In findModules');
     var dir = ['./modules', './domains/' + domain + '/modules'];
     dir.each(function(d){
         var perm = false;
@@ -120,10 +122,10 @@ function findModules(results, domain){
             //sys.log(sys.inspect(files));
             files.each(function(file){
                 dir = p.basename(file);
-                logger.info('for ' + domain + ' - dir: ' + dir);
+                core.info('for ' + domain + ' - dir: ' + dir);
                 //if no items in array or this module isn't in the array
                 if (results.length === 0 || !findInDocList(results,'name',dir)) {
-                    logger.info('for ' + domain + 'adding ' + dir +' to DB');
+                    core.info('for ' + domain + 'adding ' + dir +' to DB');
                     //add it to the DB
                     var mod = coll.getModel();
                     mod.name = dir;

@@ -6,9 +6,6 @@ var should = require('should'),
     sys = require('sys'),
     Model = require('../system/model').Model;
     
-
-
-
 module.exports = {
     'should be instance of model': function(){
         var model = new Model();
@@ -19,7 +16,7 @@ module.exports = {
         model.getObject().should.eql({});
     },
     'should return the same object': function(){
-        core.log('this is the third model test');
+        logger.log('this is the third model test');
         var obj = {
             test: 'test',
             test2: 143

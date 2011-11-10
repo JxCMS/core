@@ -19,9 +19,9 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing');
+            logger.info('got select ... testing');
             select.should.be.an.instanceof(Select);
-            core.log('closing collection');
+            logger.info('closing collection');
             coll.close(domain);
         });
     },  
@@ -29,7 +29,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing fields');
+            logger.info('got select ... testing fields');
             select.field('test').field('test2').fields.should.eql({test: true, test2: true});
             coll.close(domain);
         });
@@ -38,7 +38,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing skip');
+            logger.info('got select ... testing skip');
             select.skip(10).options.should.eql({skip: 10});
             coll.close(domain);
         });
@@ -47,7 +47,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing limit');
+            logger.info('got select ... testing limit');
             select.limit(10).options.should.eql({limit: 10});
             coll.close(domain);
         });
@@ -56,7 +56,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing sortAsc');
+            logger.info('got select ... testing sortAsc');
             select.sortAsc('test').options.should.eql({sort:[['test','asc']]});
             coll.close(domain);
         });
@@ -65,7 +65,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing sortDesc');
+            logger.info('got select ... testing sortDesc');
             select.sortDesc('test').options.should.eql({sort:[['test','desc']]});
             coll.close(domain);
         });
@@ -74,7 +74,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing sortAsc');
+            logger.info('got select ... testing sortAsc');
             select.sortAsc('test')
                 .sortDesc('test2')
                 .sortAsc('test3')
@@ -88,7 +88,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing where');
+            logger.info('got select ... testing where');
             select.where('test = 3')
                 .query
                 .should
@@ -100,7 +100,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing where with and');
+            logger.info('got select ... testing where with and');
             select.where('test = 3')
                 .and('test2 = some random string')
                 .query
@@ -114,7 +114,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing where with or');
+            logger.info('got select ... testing where with or');
             select.where('test = 3')
                 .or('test2 = some random string')
                 .query
@@ -131,7 +131,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing in');
+            logger.info('got select ... testing in');
             select.in('test',[1,2,3,4])
                 .query
                 .should
@@ -143,7 +143,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing nin');
+            logger.info('got select ... testing nin');
             select.nin('test',[1,2,3,4])
                 .query
                 .should
@@ -155,7 +155,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing all');
+            logger.info('got select ... testing all');
             select.all('test',[1,2,3,4])
                 .query
                 .should
@@ -167,7 +167,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing exists');
+            logger.info('got select ... testing exists');
             select.exists('test')
                 .query
                 .should
@@ -179,7 +179,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing mod');
+            logger.info('got select ... testing mod');
             select.mod('test',10,3)
                 .query
                 .should
@@ -191,7 +191,7 @@ module.exports = {
         var coll = new Collection(domain,dbConfig);
         coll.init().then(function(){
             var select = coll.getSelect();
-            core.log('got select ... testing size');
+            logger.info('got select ... testing size');
             select.size('test',5)
                 .query
                 .should

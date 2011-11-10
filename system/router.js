@@ -31,18 +31,19 @@ var Route = new Class({
 
     match: function(uri) {
         //test if we have a matching uri.
-        sys.log('uri:'+sys.inspect(uri));
-        sys.log('re: '+sys.inspect(this.re));
+        core.debug('uri:', uri);
+        core.debug('re: ', this.re);
         if (this.re.test(uri)) {
+            core.debug('have a matching route.');
             //get the captures
             var parts = uri.match(this.re);
-            sys.log('parts before pops: ' + sys.inspect(parts));
+            core.debug('parts before pops: ' , parts);
             //kill first part
             parts.shift();
             //and pop off the last two...
             delete parts.index;
             delete parts.input;
-            sys.log('parts after pops: ' + sys.inspect(parts));
+            core.debug('parts after pops: ',parts);
             //now, take the keys and the parts and match them up...
             params = {};
             if (this.keys !== null) {
@@ -64,6 +65,7 @@ var Route = new Class({
                 params: params
             };
         }
+        core.debug('this one does not match: ',this.re);
         return false;
 
     }
