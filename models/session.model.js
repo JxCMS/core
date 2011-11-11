@@ -1,17 +1,23 @@
-var mongoose = require('mongoose')
-    , Schema = mongoose.Schema;
+var Collection = require('../system/collection').Collection,
+    Model = require('../system/model').Model;
 
 
-var session = new Schema({
-    data: {type: String, 'default': {} }, //json encoded string
-    updated_at: Date
-
+exports.model = new Class({
+    
+    Extends: Model,
+    
+    save: function(request){
+        this.updated_at = new Date().getTime();
+        return this.parent(request);
+    }
 });
 
-session.pre('save',function(next){
-    this.updated_at = Date.now();
-    next();
+
+exports.Collection = new Class({
+
+    Extends: Collection,
+    
+    model: exports.model,
+    
+    name: 'Session'
 });
-
-
-mongoose.model('Session', session);

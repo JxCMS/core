@@ -12,8 +12,7 @@ var sys = require('sys'),
     Request = require('./request').Request,
     Response = require('./response').Response,
     Router = require('./router').Router,
-    View = require('./view'),
-    Model = require('./models');
+    View = require('./view');
 
 
 
@@ -53,10 +52,9 @@ exports.Domain = new Class({
          var filePath;
          var dir = './domains';
          var self = this;
-         Model.loadSystemModels();
          fs.realpath(dir).then(function(path){
              dir = filePath = path;
-             core.log('Directory path: ' + path);
+             core.info('Directory path: ' + path);
              return fs.readdir(path);
          }).then(function(files) {
             //sys.log(sys.inspect(files));
@@ -64,31 +62,28 @@ exports.Domain = new Class({
             files.each(function(file){
                 d = p.basename(file);
                 core.debug('dir', dir);
-                //then grab the config
-                var cfg = require(dir + '/' + d +'/config/db.cfg').config;
-                core.debug('config',cfg);
-
-                //create the database connection
                 self.domains[d] = {};
+                //then grab the config
+                var cfg = self.domains[d].cfg = require(dir + '/' + d +'/config/db.cfg').config;
+                core.debug('config',cfg);
                 //also pull in the aliases for this domain
                 self.domains[d].aliases = require(dir + '/' + d +'/config/alias.cfg').alias;
                 core.debug('aliases for ' + d, self.domains[d].aliases);
-                //now the database
-                var db = self.domains[d].db = Model.createConnection(cfg);
-                //core.debug('db for ' + d, db);
+                
                 //create router
                 var router = self.domains[d].router = new Router();
                 core.debug('router for ' + d,router);
+                
                 //load up modules and ready all views
-                promises.push(Modules.init(db, d, router));
-                core.log('back from modules.init');
+                promises.push(Modules.init(d, router, cfg));
+                core.info('back from modules.init');
                 View.init(d);
-                core.log('back from View.init()');
+                core.info('back from View.init()');
             }, this);
-            core.log('# of promises returned = ' + promises.length);
+            core.info('# of promises returned in domain init = ' + promises.length);
              
             Promise.all(promises).then(function(){
-                core.log('all promises returned');
+                core.info('all promises returned');
                 promise.resolve(true);     
             });
          });
@@ -107,7 +102,7 @@ exports.Domain = new Class({
             var parts = host.split(':');
             core.debug('parts of host',parts);
             domain = parts[0];
-            core.log('Domain is ' + domain);
+            core.info('Domain is ' + domain);
         } else {
             domain = host;
         }
@@ -118,7 +113,7 @@ exports.Domain = new Class({
         req.aliasedDomain = null;
         //first check to see if this domain is defined
         var ret = this.getRouter(domain);
-        var router = ret.router;
+        router = ret.router;
         if (ret.domainIsAlias) {
             req.aliasedDomain = ret.aliasedDomain;
         }
@@ -135,7 +130,7 @@ exports.Domain = new Class({
         },function(err){
             //redirect to 404 error page
             //resp.redirect('/error/404');
-            core.log('!!!heading to error routing.');
+            core.info('!!!heading to error routing.');
             domainObj.redirect(req, resp, '/error/404').then(function(response){
                 promise.resolve(response);
             });
@@ -171,19 +166,19 @@ exports.Domain = new Class({
         return ret;
     },
 
-    getDb: function(domain) {
-        core.log('getting database connection for domain ' + domain);
-        var db;
+    getDbOptions: function(domain) {
+        core.info('getting database connection for domain ' + domain);
+        var opts;
         if (this.domains[domain]) {
-            db = this.domains[domain].db;
+            opts = this.domains[domain].cfg;
         } else {
             Object.each(this.domains, function(d){
                 if (d.aliases.contains(domain)) {
-                    db = d.db;
+                    opts = d.cfg;
                 }
             },this);
         }
-        return db;
+        return opts;
     },
     
     redirect: function (req, resp, url) {

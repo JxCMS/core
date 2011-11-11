@@ -78,10 +78,10 @@ var Response = exports.Response = new Class({
      */
 
     sendfile: function(path){
-        var self = this
-            , ranges = self.req.getHeader('range')
-            , head = 'HEAD' == self.req.getMethod()
-            , promise = new Promise();
+        var self = this,
+            ranges = self.req.getHeader('range'),
+            head = 'HEAD' == self.req.getMethod(),
+            promise = new Promise();
             
         if (nil(this.resp)) {
             promise.resolve(false);
@@ -103,9 +103,9 @@ var Response = exports.Response = new Class({
                     ranges = parseRange(stat.size, ranges);
                     // Valid
                     if (ranges) {
-                        var stream = ofs.createReadStream(path, ranges[0])
-                            , start = ranges[0].start
-                            , end = ranges[0].end;
+                        stream = ofs.createReadStream(path, ranges[0]);
+                        var start = ranges[0].start,
+                            end = ranges[0].end;
                         status = 206;
                               self.header('Content-Range', 'bytes '
                             + start
@@ -261,8 +261,8 @@ var Response = exports.Response = new Class({
      * @api public
      */
     redirect: function(url, status){
-        var status = status || 302
-            , body;
+        var body;
+        status = status || 302;
 
         // Support text/{plain,html} by default
         if (this.req.accepts('html')) {

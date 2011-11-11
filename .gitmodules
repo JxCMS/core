@@ -1,6 +1,3 @@
-[submodule "node_modules/mongoose"]
-	path = node_modules/mongoose
-	url = http://github.com/LearnBoost/mongoose.git
 [submodule "node_modules/multipart"]
 	path = node_modules/multipart
 	url = http://github.com/isaacs/multipart-js.git
@@ -19,12 +16,30 @@
 [submodule "node_modules/socket.io-server"]
 	path = node_modules/socket.io-server
 	url = https://github.com/LearnBoost/Socket.IO-node.git
-[submodule "node_modules/jazz"]
-	path = node_modules/jazz
-	url = https://github.com/shinetech/jazz.git
-[submodule "node_modules/hmvc"]
-	path = node_modules/hmvc
-	url = https://github.com/mixu/hmvc-cfs.git
-[submodule "node_modules/dust"]
-	path = node_modules/dust
-	url = https://github.com/akdubya/dustjs.git
+[submodule "node_modules/mongodb"]
+	path = node_modules/mongodb
+	url = https://github.com/christkv/node-mongodb-native.git
+[submodule "node_modules/vows"]
+	path = node_modules/vows
+	url = https://github.com/cloudhead/vows.git
+[submodule "node_modules/should"]
+	path = node_modules/should
+	url = https://github.com/visionmedia/should.js.git
+[submodule "node_modules/expresso"]
+	path = node_modules/expresso
+	url = https://github.com/visionmedia/expresso.git
+[submodule "node_modules/winston"]
+	path = node_modules/winston
+	url = git://github.com/indexzero/winston.git
+[submodule "node_modules/pkginfo"]
+	path = node_modules/pkginfo
+	url = git://github.com/indexzero/node-pkginfo.git
+[submodule "node_modules/node-template"]
+	path = node_modules/node-template
+	url = git@github.com:jonlb/node-template.git
+[submodule "node_modules/stack-trace"]
+	path = node_modules/stack-trace
+	url = https://github.com/felixge/node-stack-trace.git
+[submodule "node_modules/async"]
+	path = node_modules/async
+	url = https://github.com/caolan/async.git

@@ -1,24 +1,28 @@
 
-var mongoose = require('mongoose')
-    , Schema = mongoose.Schema;
+var Collection = require('../system/collection').Collection,
+    Model = require('../system/model').Model;
 
-var module = new Schema({
-    name: {type: String, index: true, required: true},
-    activated: Boolean,
-    permanent: Boolean,
-    updated_at: Date
+
+exports.model = new Class({
     
+    Extends: Model,
+    
+    save: function(request){
+        this.updated_at = new Date().getTime();
+        return this.parent(request);
+    },
+    
+    setActive: function(active) {
+        this.activated = active;
+    }
 });
 
-module.pre('save',function(next){
-    this.updated_at = new Date().getTime();
-    next();
+
+exports.Collection = new Class({
+
+    Extends: Collection,
+    
+    model: exports.model,
+    
+    name: 'modules'
 });
-
-module.method('setActive', function(active){
-            this.activated = active;
-});
-
-       
-
-mongoose.model('Module', module);

@@ -1,5 +1,7 @@
 
-var Promise = require('promise').Promise;
+var Collection = require('../models/setting.model').Collection,
+    model = require('../models/setting.model').model,
+    Promise = require('promise').Promise;
 
 
 var Settings = new Class({
@@ -9,66 +11,73 @@ var Settings = new Class({
         add = !nil(add) ? add : false;
 
         var domain = request.domain,
-            db = request.domainObj.getDb(domain),
+            options = request.domainObj.getDbOptions(domain),
             parts = key.split('.'),
-            Setting = db.model('Setting'),
+            opts = Object.clone(options),
             promise = new Promise(),
-            ret = null;
+            ret = null;         
+        var coll = this.coll = new Collection(domain, opts);
+        var select = this.coll.getSelect();
+            
+            
+    
 
         core.debug('parts of key', parts);
         //find the setting we need
-        Setting.find({'module': parts[0] , settings: {"$elemMatch": { key: parts[1]}}}, function(err, docs){
-
-            if (err) {
-                core.debug('error in setting.find', err.message);
-                if (add) {
-                    Settings.add(key, def, request);
-                }
-                ret = def;
-            } else {
-                //core.debug('doc found in setting.find', docs);
-                docs.each(function(d){
-                    d.settings.each(function(doc){
-                        if (doc.key == parts[1]) {
-                            ret = doc.value;
-                        }
-                    });
+        select.query = {'module': parts[0] , settings: {"$elemMatch": { key: parts[1]}}};
+        coll.init().then(function(){
+            return coll.find(select, request);
+        }).then(function(results){
+            results.each(function(d){
+                d.settings.each(function(doc){
+                    if (doc.key == parts[1]) {
+                        ret = doc.value;
+                    }
                 });
-                if (nil(ret) && def) {
-                    ret = def;
+            });
+            if (nil(ret) && def) {
+                ret = def;
+                if (add) {
+                    this.add(key, def, request);
                 }
             }
             promise.resolve(ret);
-        });
+        }.bind(this),function(err){
+            core.debug('error in setting.find', err.message);
+            if (add) {
+                this.add(key, def, request);
+            }
+            promise.resolve(def);
+        }.bind(this));
         return promise;
     },
 
     add: function(key, value, request) {
-        var domain = request.domain;
-        var db = request.domainObj.getDb(domain);
-
-        var parts = key.split('.');
-
-        var Setting = db.model('Setting');
+        var domain = request.domain,
+            parts = key.split('.'),
+            s;
+            
+        if (nil(this.coll)) {
+            opts = Object.clone(request.domainObj.getDbOptions(domain)),
+            this.coll = new Collection(domain, opts);
+        }
+        
+        s = this.coll.getModel();
+            
 
         //save this but delete it after the first run
-        var s = new Setting();
         s.module = parts[0];
         s.settings = [];
         s.settings.push({key: parts[1], value: value});
         core.debug('setting we\'re adding before saving',s);
         var promise = new Promise();
-        s.save(function(err, doc){
-            //no need to handle error.
-            if (err) {
-                core.debug('error on save', err);
-                promise.reject('Could not save: ' + err.message);
-            } else {
-                core.log('save successful');
-                promise.resolve(true);
-            }
-
-        });
+        s.save(request).then(function(result){
+            core.info('save successful');
+            promise.resolve(true);
+        }.bind(this),function(err){
+            core.debug('error on save', err);
+            promise.reject('Could not save: ' + err.message);
+        }.bind(this));
         return promise;
     }
 });
