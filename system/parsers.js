@@ -7,6 +7,8 @@ var http = require("http"),
     Promise = require('promise').Promise;
 
 
+//TODO: Change this to use formaline module
+
 exports.Multipart = new Class({
 
     initialize: function(req){
